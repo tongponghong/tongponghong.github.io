@@ -1,6 +1,6 @@
 #theme: jekyll-theme-minimal
 title: Tunger's homepage
 description: Here is my website!
-remote_theme: pages-themes/cayman@v0.2.0
+remote_theme: jekyll-theme-minimal
 plugins:
 - jekyll-remote-theme # add this line to the plugins list if you already have one
