@@ -26,8 +26,8 @@ description: >- # this means to ignore newlines until "baseurl:"
   line in _config.yml. It will appear in your document head meta (for
   Google search results) and in your feed.xml site description.
 baseurl: "" # the subpath of your site, e.g. /blog
-#url: "http://localhost:4000/" # the base hostname & protocol for your site, e.g. http://example.com
-url: "https://tongponghong.github.io/"
+url: "http://localhost:4000/" # the base hostname & protocol for your site, e.g. http://example.com
+#url: "https://tongponghong.github.io/"
 
 github_username:  tongponghong
 
@@ -57,15 +57,34 @@ defaults:
       path: ""
       type: pages
     values:
+      layout: single
       author_profile: true
+      excerpt: "This post should display a **header with an overlay image**, if the theme supports it."
+      header:
+        caption: "Photo credit: [**Unsplash**](https://unsplash.com)"
+        actions:
+          - label: "More Info"
+            url: "https://unsplash.com"
+
+
+
+
 
 author:
   name     : "Tunger Hong"
   avatar   : "/assets/images/headshot.jpg"
   bio      : "Hardware and Graphics student \n studying Electrical and Computer Engineering at Carnegie Mellon University"
   location : "Pittsburgh, PA"
-  fediverse: "tungerpg@gmail.com"
+  links: 
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/tongponghong"
+    - label: "Instagram"
+      icon: "fab fa-fw fa-instagram"
+      url: "https://www.instagram.com/tunger.h/?hl=en"
 
+include: ["_pages"]
+breadcrumbs: true
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
