@@ -77,7 +77,7 @@ float gen_fBrownNoise(in vec2 coord) {
 }
 
 void main() {
-    vec2 coord = gl_FragCoord.xy / res.xy * 3.0;
+    vec2 coord = gl_FragCoord.xy / res.y * 3.0;
     vec3 color = vec3(0.0);
 
     vec2 q;
@@ -118,7 +118,6 @@ void main() {
     
     gl_FragColor = vec4((pow(f, 3.0) + 0.6 * pow(f, 2.0) + 0.5 * pow(f, 1.0)) * color * sin(color) / cos(color),
                     1.0);
-        
 }
     `;
 
@@ -164,10 +163,10 @@ void main() {
 
     function resize() {
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        canvas.width = canvas.clientWidth * dpr;
-        canvas.height = canvas.clientHeight * dpr;
+        canvas.width = Math.round(canvas.clientWidth * dpr);
+        canvas.height = Math.round(canvas.clientHeight * dpr);
         gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform2f(res, canvas.width / 4, canvas.height / 2);
+        gl.uniform2f(res, canvas.width, canvas.height);
     }
 
     window.addEventListener('resize', resize);
