@@ -167,7 +167,7 @@ void main() {
         canvas.width = canvas.clientWidth * dpr;
         canvas.height = canvas.clientHeight * dpr;
         gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform2f(res, canvas.width, canvas.height);
+        gl.uniform2f(res, canvas.width / 4, canvas.height / 2);
     }
 
     window.addEventListener('resize', resize);

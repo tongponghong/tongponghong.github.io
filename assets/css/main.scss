@@ -20,10 +20,34 @@ search: false
 
 .masthead {
     min-height: clamp(200px, 40vh, 500px);
-    display: flex;
-    align-items: center;
+    position: relative;
+    //aspect-ratio: 16/9;ß
 }
 
 .masthead__inner-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     width: 100%;
+    max-width: 100%;
+    
+    background-color: #f3f3f3;
+    //background-color: #313131;
+    border-bottom: 1px solid #313131;
+    z-index: 1;
+
+}
+
+.masthead__menu {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-inline: 1.5em;
+    //background-color: #;
+}
+
+.greedy-nav {
+    background-color: transparent !important;
+    //background: #ffffff;
 }
