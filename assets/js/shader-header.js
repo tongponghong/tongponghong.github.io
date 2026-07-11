@@ -77,7 +77,7 @@ float gen_fBrownNoise(in vec2 coord) {
 }
 
 void main() {
-    vec2 coord = gl_FragCoord.xy / res.y * 3.0;
+    vec2 coord = (gl_FragCoord.xy) / res.y * 3.0;
     vec3 color = vec3(0.0);
 
     vec2 q;

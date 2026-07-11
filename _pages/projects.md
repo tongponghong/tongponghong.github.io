@@ -1,10 +1,14 @@
 ---
-title: Portfolio
+title: Projects
 layout: collection
 permalink: /projects/
-collection: portfolio
+collection: projects
 entries_layout: grid
 classes: wide
 ---
 
-Sample document listing for the collection `_portfolio`.
+- project:
+
+- project:
+
+- project:
