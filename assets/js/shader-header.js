@@ -102,19 +102,24 @@ void main() {
 
     color = mix(color, 
                 vec3(0, 0.6, 0.164706), 
-                clamp(length(q), 0.0, 1.0));
+                clamp(length(s.y), 1.0, 1.0));
 
     color = mix(color, 
                 vec3(0.666667, 1, 1), 
-                clamp(length(r.x), 0.0, 1.0));
+                clamp(length(r.x), 0.5, 1.0));
     
     color = mix(color, 
-                vec3(0.666667, 0.494290, 0.1138), 
-                clamp(length(q), 0.0, 1.0));
+                vec3(0.666667, 0.7, 0.7), 
+                clamp(length(q), 0.3, 1.0));
 
     color = mix(color, 
                 vec3(0.01, 0.0, 0.5555), 
                 clamp(length(r.x) / 2.0, 0.0, 1.0));
+
+    // VERY INTERESTING PURPLES
+    // color = mix(color, 
+    //             vec3(0.01, 0.0, 0.5555), 
+    //             clamp(length(s.y) / 2.0, 0.5, 0.7));
     
     gl_FragColor = vec4((pow(f, 3.0) + 0.6 * pow(f, 2.0) + 0.5 * pow(f, 1.0)) * color * sin(color) / cos(color),
                     1.0);
