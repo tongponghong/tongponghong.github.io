@@ -60,19 +60,19 @@ defaults:
       layout: single
       author_profile: true
 
-
-
-
-
 author:
   name     : "Tunger Hong"
   avatar   : "/assets/images/headshot.jpg"
-  bio      : "Hardware and Graphics student \n studying Electrical and Computer Engineering at Carnegie Mellon University"
+  bio      : "ECE Student at Carnegie Mellon University specializing in Hardware and Computer Graphics"
   location : "Pittsburgh, PA"
   links: 
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/tongponghong"
+    - label: "LinkedIn"
+      icon: "fab fa-fw fa-linkedin"
+      url: "https://www.linkedin.com/in/tunger-hong-08093a33b/"
+
 
 include: ["_pages"]
 breadcrumbs: true
