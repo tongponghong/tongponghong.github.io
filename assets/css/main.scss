@@ -35,7 +35,7 @@ search: false
     background-color: #f3f3f3;
     //background-color: #313131;
     border-bottom: 1px solid #313131;
-    z-index: 1;
+    z-index: 2;
 
 }
 
@@ -50,4 +50,38 @@ search: false
 .greedy-nav {
     background-color: transparent !important;
     //background: #ffffff;
+}
+
+.masthead--home {
+    min-height: 100vh;
+    min-height: 100svh;
+}
+
+.masthead__hero-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.5em;
+    color: #fff;
+    pointer-events: none;
+
+    @include breakpoint($small) {
+        padding: 1em;
+    }
+}
+
+.masthead__hero-title {
+    font-family: $sans-serif-narrow;
+    font-size: clamp(2rem, 6vw, 4rem);
+    margin-bottom: 0.25em;
+}
+
+.masthead__hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    max-width: 40em;
 }

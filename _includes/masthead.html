@@ -1,14 +1,18 @@
 {% assign locale = include.locale | default: site.locale %}
 {% capture logo_path %}{{ site.logo }}{% endcapture %}
+<!-- {% assign is_home = (page.url == "/") %} -->
+<!-- test: {{page.url}} | is_home = {{is_home}} -->
 
-<!-- <div class="masthead">
-  <div class="masthead__inner-wrap">
-    
-  </div>
-</div> -->
-
-<div class="masthead">
+<div class="masthead{% if page.url == "/" %} masthead--home{% endif %}">
   <canvas id="shader-header" class="shader-header-canvas" aria-hidden="true"></canvas>
+  
+  {% if page.url == "/" %} 
+  <div class = "masthead__hero-overlay" >
+    <h1 class = "masthead__hero-title" >{{ "Welcome!" }}</h1>
+    <p class = "masthead__hero-subtitle" >{{ site.description }}</p>
+  </div>
+  {% endif %}
+
   <div id="masthead-inner" class="masthead__inner-wrap">
     <div class="masthead__menu">
       <nav id="site-nav" class="greedy-nav" aria-label="Primary navigation">

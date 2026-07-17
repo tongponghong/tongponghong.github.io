@@ -1,9 +1,9 @@
 ---
 layout: single
 permalink: /
-title: Hi, I'm Tunger!
+title: Welcome!
 classes: wide
 ---
 
-A current student at Carnegie Mellon University (expected May 2027) majoring in Electrical and Computer Engineering and CMU
+## Tunger is a current student at Carnegie Mellon University (expected May 2027) majoring in Electrical and Computer Engineering focusing on graphics and hardware
 
