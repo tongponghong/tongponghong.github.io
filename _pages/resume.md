@@ -2,7 +2,7 @@
 title: Resume
 layout: single
 permalink: /resume/
-classes: wide
+classes: 
 ---
 
 Download my resume here:

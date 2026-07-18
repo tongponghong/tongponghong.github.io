@@ -6,3 +6,18 @@ main:
   - title: "About"
     url: /about/
 
+TOC-Projects:
+  - title: Vulkan Graphics Engine
+    children:
+      - title: "Real-Time Watercolor Stylization"
+        url: /projects/#real-time-watercolor-stylization
+      - title: "Additional Features"
+        url: /projects/#in-addition-to-that-ive-also-built-in-the-following-features
+      - title: "3D Drawing App"
+        url: /projects/#3d-drawing-app
+
+  - title: Scotty3D
+    children:
+      - title: "CPU Path tracing"
+        url: /projects/#pathtracing
+
