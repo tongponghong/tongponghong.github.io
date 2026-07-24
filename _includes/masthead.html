@@ -4,18 +4,21 @@
 <!-- test: {{page.url}} | is_home = {{is_home}} -->
 
 <div class="masthead{% if page.url == "/" %} masthead--home{% endif %}">
-  <canvas id="shader-header" class="shader-header-canvas" aria-hidden="true"></canvas>
-  
-  {% if page.url == "/" %} 
+
+  <!-- {% if page.url == "/" %} 
   <div class = "masthead__hero-overlay" >
     <h1 class = "masthead__hero-title" >{{ "Welcome!" }}</h1>
     <p class = "masthead__hero-subtitle" >{{ site.description }}</p>
   </div>
-  {% endif %}
+  {% endif %} -->
 
   <div id="masthead-inner" class="masthead__inner-wrap">
     <div class="masthead__menu">
       <nav id="site-nav" class="greedy-nav" aria-label="Primary navigation">
+        <div id="shader-hover-container">
+          <canvas id="shader-header" class="shader-header-canvas" aria-hidden="true"></canvas>
+        </div>
+
         {% unless logo_path == empty %}
           <a class="site-logo" href="{{ '/' | relative_url }}"><img src="{{ logo_path | relative_url }}" alt="{{ site.masthead_title | default: site.title }}"></a>
         {% endunless %}

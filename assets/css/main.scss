@@ -8,33 +8,46 @@ search: false
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
 @import "minimal-mistakes"; // main partials
 
-.shader-header-canvas {
+// .shader-header-canvas {
+//     position: absolute;
+//     inset: 0;
+//     width: 100%;
+//     height: 100%;
+//     z-index: 0;
+//     pointer-events: none;
+//     display: block;
+// }
+
+#shader-hover-container {
     position: absolute;
-    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#shader-header {
     width: 100%;
     height: 100%;
-    z-index: 0;
-    pointer-events: none;
     display: block;
 }
 
 .masthead {
-    min-height: clamp(200px, 40vh, 500px);
+    min-height: auto;
     position: relative;
     //aspect-ratio: 16/9;ß
 }
 
 .masthead__inner-wrap {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     width: 100%;
     max-width: 100%;
     
     background-color: #f3f3f3;
     //background-color: #313131;
-    border-bottom: 1px solid #313131;
+    border-bottom: 1px solid #f0f0f0;
     z-index: 2;
 
 }
@@ -52,10 +65,21 @@ search: false
     //background: #ffffff;
 }
 
-.masthead--home {
-    min-height: 75vh;
-    min-height: 75svh;
+.greedy-nav .visible-links a {
+    position: relative;
+    z-index: 2;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease;
 }
+
+.greedy-nav .visible-links a:hover {
+    color: #ffffff
+}
+
+// .masthead--home {
+//     min-height: 75vh;
+//     min-height: 75svh;
+// }
 
 .masthead__hero-overlay {
     position: absolute;
@@ -86,7 +110,11 @@ search: false
     max-width: 40em;
 }
 
-
+.masthead__hero-overlay,
+.masthead__hero-title,
+.masthead__hero-subtitle {
+    display: none !important;
+}
 
 
 

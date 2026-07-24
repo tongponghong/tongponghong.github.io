@@ -184,4 +184,40 @@ void main() {
         if (!prefersReducedMotion) requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
+
+    const navLinks = document.querySelectorAll('.greedy-nav .visible-links a, .greedy-nav .hidden-links a');
+    const shaderContainer = document.getElementById('shader-hover-container');
+    const navWrap = document.querySelector('.greedy-nav')
+
+    if (navLinks.length > 0 && shaderContainer && navWrap) {
+        navWrap.style.position = 'relative';
+
+        navLinks.forEach(link => {
+            link.addEventListener('mouseenter', (e) => {
+                // Get coordinates of the hovered link relative to the nav wrapper
+                const linkRect = link.getBoundingClientRect();
+                const navRect = navWrap.getBoundingClientRect();
+
+                // Add some padding to the box (e.g., +10px wider/taller than the text)
+                const paddingX = 16; 
+                const paddingY = 8;
+
+                // Move and resize the container
+                shaderContainer.style.width = `${linkRect.width + paddingX}px`;
+                shaderContainer.style.height = `${linkRect.height + paddingY}px`;
+                shaderContainer.style.top = `${linkRect.top - navRect.top - (paddingY / 2)}px`;
+                shaderContainer.style.left = `${linkRect.left - navRect.left - (paddingX / 2)}px`;
+                
+                // Fade it in
+                shaderContainer.style.opacity = '1';
+
+                // Force webgl to update its resolution uniform based on the new small size
+                resize();
+            });
+        });
+
+        navWrap.addEventListener('mouseleave', () => {
+            shaderContainer.style.opacity = '0';
+        });
+    }
 })();
