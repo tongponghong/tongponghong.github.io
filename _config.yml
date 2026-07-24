@@ -56,6 +56,14 @@ defaults:
       type: pages
     values:
       layout: single
+  
+  # _projects
+  - scope: 
+      path: ""
+      type: projects
+    values: 
+      layout: single
+      share: true
       
 
 author:
@@ -71,6 +79,10 @@ author:
       icon: "fab fa-fw fa-linkedin"
       url: "https://www.linkedin.com/in/tunger-hong-08093a33b/"
 
+collections: 
+  projects:
+    output: true
+    permalink: /projects/:title/
 
 include: ["_pages"]
 # breadcrumbs: true

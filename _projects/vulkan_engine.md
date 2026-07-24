@@ -1,10 +1,7 @@
 ---
-title: Projects
-layout: single
-permalink: /projects/
-classes: wide
-sidebar:
-  nav: "TOC-Projects"
+title: "Vulkan Render Engine"
+header_image: "/assets/images/pipeline.png"
+category: "school"
 ---
 
 ## Vulkan Graphics Engine
@@ -71,8 +68,4 @@ I plan on finishing up shadow mapping and PBR materials next.
 [Link to repo](https://github.com/tongponghong/15472_watercolor) (The repo this time is the same one as the watercolor section)
 
 After the semester ended, I've been actively working on creating a 3D drawing application. Currently, I have worked on implementing 
-
-## Scotty3D
-
-### Pathtracing
 

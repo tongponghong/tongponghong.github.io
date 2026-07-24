@@ -1,7 +1,43 @@
 ---
 layout: single
+classes: wide
 author_profile: true
 ---
 
+<!-- Tab Controls -->
+<div class="gallery-tabs">
+  <button class="tab-btn" onclick="filterGallery('school')">School Projects</button>
+  <button class="tab-btn" onclick="filterGallery('personal')">Personal Projects</button>
+</div>
 
-hi
+<!-- Gallery Grid -->
+<div class="project-gallery">
+  {% for project in site.projects %}
+    <a href="{{ project.url }}" class="gallery-item" data-category="{{ project.category }}">
+      <img src="{{ project.header_image }}" alt="{{ project.title }}">
+      <div class="overlay">
+        <h3 class="project-title">{{ project.title }}</h3>
+      </div>
+    </a>
+  {% endfor %}
+</div>
+
+<!-- Simple JS for filtering tabs -->
+<script>
+function filterGallery(category) {
+  const items = document.querySelectorAll('.gallery-item');
+  const buttons = document.querySelectorAll('.tab-btn');
+  
+  buttons.forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+
+  items.forEach(item => {
+    if (item.dataset.category === category) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+</script>
+
