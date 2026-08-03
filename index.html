@@ -7,10 +7,21 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- Geist Mono, variable weight 100-900 -->
 <link
-  href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap"
   rel="stylesheet"
 />
+<!-- Fallback: official Vercel `geist` package via jsDelivr, used only if
+     Google Fonts is unavailable (blocked network, region, ad-blocker). -->
+<style>
+  @font-face {
+    font-family: "Geist Mono Fallback";
+    src: url("https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/GeistMono-Variable.woff2") format("woff2-variations");
+    font-weight: 100 900;
+    font-display: swap;
+  }
+</style>
 
 <link rel="stylesheet" href="assets/css/style.css" />
 </head>

@@ -28,67 +28,170 @@ document.addEventListener("DOMContentLoaded", () => {
      Carousel
      ======================================================= */
   const track = document.getElementById("carouselTrack");
-  const slides = Array.from(track.querySelectorAll(".carousel-slide"));
   const prevBtn = document.getElementById("prevBtn");
   const nextBtn = document.getElementById("nextBtn");
   const dotsWrap = document.getElementById("carouselDots");
   const captionText = document.getElementById("captionText");
 
-  let activeIndex = 0;
+  const originals = Array.from(track.querySelectorAll(".carousel-slide"));
+  const N = originals.length;
+  const LOOPED = N > 1;
 
-  // Build dots
-  const dots = slides.map((slide, i) => {
+  /* ---------------------------------------------------------
+     Infinite loop strategy
+     ---------------------------------------------------------
+     We render three consecutive copies of the slide set:
+
+         [ clones ][ ORIGINALS ][ clones ]
+           0..N-1     N..2N-1     2N..3N-1
+
+     The user always *appears* to sit in the middle copy. After each
+     scroll settles we silently teleport back to the equivalent slide
+     in the middle copy. Because copy k and copy k+1 are pixel-identical
+     and sit at the same offset within the viewport, the jump is
+     invisible — but it means you can scroll past either end forever.
+     --------------------------------------------------------- */
+  if (LOOPED) {
+    const makeClones = () =>
+      originals.map((s) => {
+        const c = s.cloneNode(true);
+        c.dataset.clone = "1";
+        c.setAttribute("aria-hidden", "true");
+        return c;
+      });
+
+    const before = makeClones();
+    const after = makeClones();
+    before.forEach((c) => track.insertBefore(c, originals[0]));
+    after.forEach((c) => track.appendChild(c));
+  }
+
+  const slides = Array.from(track.querySelectorAll(".carousel-slide"));
+  const realIndexOf = (i) => ((i % N) + N) % N;
+
+  // Scroll offset that puts a given slide dead-center in the viewport.
+  function centerOffset(slide) {
+    return slide.offsetLeft - (track.clientWidth - slide.offsetWidth) / 2;
+  }
+
+  function goTo(index, behavior) {
+    const slide = slides[index];
+    if (!slide) return;
+    track.scrollTo({ left: centerOffset(slide), behavior: behavior || "auto" });
+  }
+
+  // Which slide is nearest the horizontal center right now.
+  function centerIndex() {
+    const mid = track.scrollLeft + track.clientWidth / 2;
+    let best = 0;
+    let bestDist = Infinity;
+    slides.forEach((slide, i) => {
+      const dist = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - mid);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  // Build dots — one per *real* slide, not per clone.
+  const dots = originals.map((_, i) => {
     const dot = document.createElement("button");
     dot.className = "carousel-dot";
     dot.type = "button";
     dot.setAttribute("aria-label", `Go to slide ${i + 1}`);
-    dot.addEventListener("click", () => scrollToSlide(i));
+    dot.addEventListener("click", () => {
+      // Jump to whichever copy of that slide is closest, so the
+      // carousel never scrolls the long way around.
+      const from = centerIndex();
+      let target = from;
+      let bestDist = Infinity;
+      slides.forEach((_s, k) => {
+        if (realIndexOf(k) !== i) return;
+        const dist = Math.abs(k - from);
+        if (dist < bestDist) {
+          bestDist = dist;
+          target = k;
+        }
+      });
+      goTo(target, "smooth");
+    });
     dotsWrap.appendChild(dot);
     return dot;
   });
 
   function setActive(index) {
-    activeIndex = index;
+    const real = realIndexOf(index);
     slides.forEach((slide, i) => slide.classList.toggle("is-active", i === index));
-    dots.forEach((dot, i) => dot.classList.toggle("is-active", i === index));
-    const caption = slides[index].dataset.caption || "";
-    captionText.textContent = caption;
+    dots.forEach((dot, i) => dot.classList.toggle("is-active", i === real));
+    captionText.textContent = slides[index].dataset.caption || "";
   }
 
-  function scrollToSlide(index) {
-    const clamped = Math.max(0, Math.min(slides.length - 1, index));
-    slides[clamped].scrollIntoView({
-      behavior: "smooth",
-      inline: "center",
-      block: "nearest",
-    });
+  // After a scroll settles, re-seat the view in the middle copy.
+  function normalize() {
+    if (!LOOPED) return;
+    const i = centerIndex();
+    const target = N + realIndexOf(i);
+    if (target !== i) goTo(target, "auto"); // instant — the visual result is identical
+    setActive(target);
   }
 
-  prevBtn.addEventListener("click", () => scrollToSlide((activeIndex - 1) % 3));
-  nextBtn.addEventListener("click", () => scrollToSlide((activeIndex + 1) % 3));
+  let rafId = null;
+  let settleTimer = null;
 
-  // Track which slide is centered/active as the user scrolls or swipes
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-          const index = slides.indexOf(entry.target);
-          if (index !== -1) setActive(index);
-        }
-      });
+  track.addEventListener(
+    "scroll",
+    () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => setActive(centerIndex()));
+
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(normalize, 140);
     },
-    { root: track, threshold: [0.6] }
+    { passive: true }
   );
-  slides.forEach((slide) => observer.observe(slide));
 
-  // Clicking a slide (or its play button) opens that project's panel
+  /* Step one slide in either direction.
+     Rapid clicking can outrun the 140ms settle timer and walk off the end of
+     the cloned strip, so if the next step would land out of range we re-seat
+     into the middle copy first (instantly, invisibly) and step from there.
+     That keeps the arrows working forever in both directions. */
+  function step(delta) {
+    const i = centerIndex();
+    let target = i + delta;
+    if (LOOPED && (target < 0 || target >= slides.length)) {
+      const seated = N + realIndexOf(i);
+      goTo(seated, "auto");
+      target = seated + delta;
+    }
+    goTo(target, "smooth");
+  }
+
+  prevBtn.addEventListener("click", () => step(-1));
+  nextBtn.addEventListener("click", () => step(1));
+
+  // Clicking a slide (or its play button) opens that project's panel.
+  // Bound to clones too, so they behave identically.
   slides.forEach((slide) => {
     slide.addEventListener("click", () => {
       openProjectPanel(slide.dataset.project);
     });
   });
 
-  setActive(0);
+  // Start centered on the first real slide, without animating there.
+  function initCarousel() {
+    goTo(LOOPED ? N : 0, "auto");
+    setActive(LOOPED ? N : 0);
+  }
+  initCarousel();
+
+  // Slide widths are percentage-based, so recenter after a resize.
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => goTo(centerIndex(), "auto"), 120);
+  });
 
   /* =======================================================
      Side panels (project + about)
