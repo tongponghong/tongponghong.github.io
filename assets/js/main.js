@@ -128,17 +128,38 @@ document.addEventListener("DOMContentLoaded", () => {
     captionText.textContent = slides[index].dataset.caption || "";
   }
 
-  // After a scroll settles, re-seat the view in the middle copy.
+  /* After a scroll settles, re-seat the view in the middle copy.
+
+     The slide we teleport TO is a different DOM element than the one we
+     teleport FROM, so it has to receive .is-active. Left alone it would
+     animate up from the inactive state (opacity .55 / scale .92) over 400ms
+     — a visible "pop" on every wrap. So we disable slide transitions for
+     the single frame in which the swap happens, forcing the new slide to
+     adopt the active state instantly. Visually identical, no animation. */
   function normalize() {
     if (!LOOPED) return;
     const i = centerIndex();
     const target = N + realIndexOf(i);
-    if (target !== i) goTo(target, "auto"); // instant — the visual result is identical
+
+    if (target === i) {
+      setActive(target);
+      return; // already seated — don't touch anything
+    }
+
+    track.classList.add("is-teleporting");
+    goTo(target, "auto");
     setActive(target);
+    void track.offsetWidth; // force style flush while transitions are off
+    track.classList.remove("is-teleporting");
   }
 
   let rafId = null;
   let settleTimer = null;
+
+  // `scrollend` fires only once momentum has fully stopped, which is exactly
+  // when it's safe to teleport. Where it isn't supported we debounce the
+  // scroll event instead, which can occasionally fire mid-momentum.
+  const supportsScrollEnd = "onscrollend" in window;
 
   track.addEventListener(
     "scroll",
@@ -146,11 +167,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => setActive(centerIndex()));
 
-      clearTimeout(settleTimer);
-      settleTimer = setTimeout(normalize, 140);
+      if (!supportsScrollEnd) {
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(normalize, 140);
+      }
     },
     { passive: true }
   );
+
+  if (supportsScrollEnd) track.addEventListener("scrollend", normalize);
 
   /* Step one slide in either direction.
      Rapid clicking can outrun the 140ms settle timer and walk off the end of

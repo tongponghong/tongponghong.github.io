@@ -209,6 +209,15 @@ button {
   box-shadow: 0 16px 44px rgba(19, 14, 1, 0.26);
 }
 
+/* Applied by main.js for the single frame in which the infinite-loop
+   teleport swaps .is-active onto the equivalent cloned slide. Without this
+   the incoming slide animates up from the inactive state, producing a
+   visible "pop" every time the carousel wraps. Higher specificity (0,3,0)
+   than .carousel-slide (0,1,0), so no !important needed. */
+.carousel-track.is-teleporting .carousel-slide {
+  transition: none;
+}
+
 .carousel-slide__media {
   position: absolute;
   inset: 0;
