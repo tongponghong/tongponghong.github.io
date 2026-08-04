@@ -214,8 +214,17 @@ button {
    the incoming slide animates up from the inactive state, producing a
    visible "pop" every time the carousel wraps. Higher specificity (0,3,0)
    than .carousel-slide (0,1,0), so no !important needed. */
-.carousel-track.is-teleporting .carousel-slide {
+.carousel-track.is-teleporting .carousel-slide,
+.carousel-track.is-teleporting .play-btn {
   transition: none;
+}
+
+/* Mandatory snapping re-runs its settle animation when scrollLeft is set
+   programmatically, which shows up as a stutter right at the wrap point.
+   Suspending snap for the duration of the teleport lets the jump land
+   exactly where we put it; snap is restored on the next frame. */
+.carousel-track.is-teleporting {
+  scroll-snap-type: none;
 }
 
 .carousel-slide__media {
@@ -269,12 +278,41 @@ button {
   align-items: center;
   justify-content: center;
   box-shadow: 0 8px 24px rgba(19, 14, 1, 0.25);
-  transition: transform 0.2s ease;
   z-index: 2;
+
+  /* Only the centred slide shows a Play button. The peeking slides are
+     half off-screen, so their centred button lands right on top of the
+     prev/next arrows — which read as two overlapping buttons. */
+  opacity: 0;
+  pointer-events: none;
+
+  /* Fade OUT fast and with no delay. A CSS transition is chosen from the
+     AFTER-change style, so a slide losing .is-active picks up this rule and
+     is fully gone in 120ms. */
+  transition: opacity 0.12s ease, transform 0.2s ease;
 }
 
-.play-btn:hover {
+
+.carousel-slide.is-active .play-btn {
+  opacity: 1;
+  pointer-events: auto;
+
+  /* Fade IN only after the outgoing button has finished disappearing
+     (0.12s delay == the fade-out duration above). Without this sequencing
+     the two crossfade, putting two semi-transparent Play buttons on screen
+     at once — one of which lands underneath the prev/next arrow. */
+  transition: opacity 0.22s ease 0.12s, transform 0.2s ease;
+}
+
+.carousel-slide.is-active .play-btn:hover {
   transform: translate(-50%, -50%) scale(1.06);
+}
+
+/* Force the play button to hide while the track is actively scrolling */
+.carousel-track.is-scrolling .play-btn {
+  opacity: 0 !important;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
 }
 
 .carousel-arrow {
@@ -440,25 +478,42 @@ button {
   margin-bottom: 20px;
 }
 
-.resume-entry__head {
+/* Two-row entry:
+     row 1  Organisation (bold)          Dates (italic, right)
+     row 2  Role (italic)                Location (italic, right)   */
+.resume-entry__row {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  font-weight: 600;
+  gap: 16px;
 }
 
-.resume-entry__date {
-  color: var(--color-text);
-  opacity: 0.55;
-  font-weight: 400;
-  font-size: 0.9rem;
+.resume-entry__row + .resume-entry__row {
+  margin-top: 1px;
+}
+
+.resume-entry__org {
+  font-weight: 700;
+}
+
+.resume-entry__role {
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Right-hand column: dates and location share the same treatment so they
+   line up as a single right-aligned stack. */
+.resume-entry__date,
+.resume-entry__location {
+  flex-shrink: 0;
+  font-style: italic;
+  text-align: right;
   white-space: nowrap;
+  opacity: 0.9;
 }
 
-.resume-entry__sub {
-  margin: 2px 0 8px;
-  opacity: 0.65;
-  font-size: 0.9rem;
+.resume-entry__list {
+  margin-top: 8px;
 }
 
 .resume-entry__list {
@@ -514,7 +569,29 @@ button {
 
 .resume-contact-list {
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
+}
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--color-text);
+  text-decoration: none;
+  opacity: 0.85;
+  overflow-wrap: anywhere; /* long email shouldn't overflow the narrow column */
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.contact-link:hover {
+  color: var(--color-button);
+  opacity: 1;
+}
+
+.contact-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
 }
 
 /* =========================================================
@@ -620,6 +697,72 @@ button {
   font-size: 1rem;
   color: var(--color-text);
   opacity: 0.85;
+}
+
+/* --- Rendered markdown inside the project panel --- */
+.side-panel__body h2 {
+  font-size: 1.15rem;
+  margin: 28px 0 10px;
+}
+
+.side-panel__body h3 {
+  font-size: 1rem;
+  margin: 22px 0 8px;
+  color: var(--color-button);
+}
+
+.side-panel__body > :first-child {
+  margin-top: 0;
+}
+
+.side-panel__body a {
+  color: var(--color-button);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.side-panel__body a:hover {
+  color: var(--color-button-hover);
+}
+
+.side-panel__body p {
+  line-height: 1.6;
+}
+
+.side-panel__body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  display: block;
+}
+
+.side-panel__body figure {
+  margin: 18px 0;
+}
+
+.side-panel__body figcaption {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin-top: 6px;
+}
+
+/* YouTube embeds: the source markdown hardcoded 640x480, which overflows
+   the panel. Force them to fill the column at 16:9 instead. */
+.side-panel__body iframe {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--radius-md);
+  margin: 10px 0 22px;
+}
+
+.side-panel__body code {
+  background: var(--color-bg);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.9em;
 }
 
 .side-panel--about .side-panel__content {

@@ -1,28 +1,22 @@
 document.addEventListener("DOMContentLoaded", () => {
   /* =======================================================
-     Placeholder per-project data
-     Swap these values in for real content later.
+     Project data — sourced from _projects/*.md
+
+     Jekyll renders one <template class="project-data"> per markdown file,
+     carrying the front matter on data-* attributes and the rendered
+     markdown body as its content. Adding a project is therefore just
+     adding a file to _projects/ — nothing here needs to change.
      ======================================================= */
-  const projectData = {
-    "project-1": {
-      title: "[Project One Title]",
-      imageClass: "placeholder-media--a",
-      github: "#",
-      body: "<p>[Project description goes here.]</p>",
-    },
-    "project-2": {
-      title: "[Project Two Title]",
-      imageClass: "placeholder-media--b",
-      github: "#",
-      body: "<p>[Project description goes here.]</p>",
-    },
-    "project-3": {
-      title: "[Project Three Title]",
-      imageClass: "placeholder-media--c",
-      github: "#",
-      body: "<p>[Project description goes here.]</p>",
-    },
-  };
+  const projectData = {};
+  document.querySelectorAll("template.project-data").forEach((tpl) => {
+    projectData[tpl.dataset.project] = {
+      title: tpl.dataset.title || "",
+      github: tpl.dataset.github || "",
+      image: tpl.dataset.image || "",
+      accent: tpl.dataset.accent || "a",
+      body: tpl.innerHTML,
+    };
+  });
 
   /* =======================================================
      Carousel
@@ -95,6 +89,65 @@ document.addEventListener("DOMContentLoaded", () => {
     return best;
   }
 
+  /* ---------------------------------------------------------
+     Whole-period shifting
+     ---------------------------------------------------------
+     The rendered strip repeats with a period of exactly one copy.
+     So adding or subtracting that width from scrollLeft is ALWAYS
+     visually identical, at any scroll offset — including halfway
+     between two slides, or mid-animation. That makes it safe to
+     re-seat at any moment, not just once scrolling has stopped,
+     which is what stops fast input from reaching the strip's end.
+     --------------------------------------------------------- */
+  function periodWidth() {
+    return slides[N].offsetLeft - slides[0].offsetLeft;
+  }
+
+  // Run a mutation with transitions + scroll-snap suspended.
+  function withoutTransitions(fn) {
+    track.classList.add("is-teleporting");
+    void track.offsetWidth;
+    fn();
+    void track.offsetWidth;
+    track.classList.remove("is-teleporting");
+  }
+
+/* Re-seat index `i` into the middle copy, shifting scrollLeft by whole
+     periods so nothing moves on screen. Returns the equivalent index. */
+  function seat(i) {
+    if (!LOOPED) return i;
+    const seated = N + realIndexOf(i);
+    if (seated === i) return seated;
+
+    // (i - seated) is always an exact multiple of N, since both share a
+    // real index — so this is a whole number of periods.
+    const periods = (i - seated) / N;
+    withoutTransitions(() => {
+      track.scrollLeft -= periods * periodWidth();
+      
+      // FIX: Instantly apply the active state to the destination slide
+      // while transitions are suspended to prevent the stutter/crossfade bugs.
+      setActive(seated);
+    });
+    return seated;
+  }
+
+  /* Fast swipes never go through step(), so they need their own guard.
+     Called every scroll frame: the instant the centred slide leaves the
+     middle copy we shift back by a whole period. Because that shift is
+     invisible, it's safe to do mid-momentum — the fling simply continues
+     from the equivalent position. This is what makes it impossible to
+     reach the end of the strip no matter how hard you flick.
+
+     Skipped while `commanded` is set, i.e. during a smooth scroll we
+     started ourselves, since moving the ground under an in-flight
+     animation would fight its fixed target. */
+  function keepInBand() {
+    if (!LOOPED || commanded !== null) return;
+    const i = centerIndex();
+    if (i < N || i >= 2 * N) seat(i);
+  }
+
   // Build dots — one per *real* slide, not per clone.
   const dots = originals.map((_, i) => {
     const dot = document.createElement("button");
@@ -138,23 +191,15 @@ document.addEventListener("DOMContentLoaded", () => {
      adopt the active state instantly. Visually identical, no animation. */
   function normalize() {
     if (!LOOPED) return;
-    const i = centerIndex();
-    const target = N + realIndexOf(i);
-
-    if (target === i) {
-      setActive(target);
-      return; // already seated — don't touch anything
-    }
-
-    track.classList.add("is-teleporting");
-    goTo(target, "auto");
-    setActive(target);
-    void track.offsetWidth; // force style flush while transitions are off
-    track.classList.remove("is-teleporting");
+    commanded = null; // scrolling has stopped; re-derive from actual position
+    const seated = seat(centerIndex());
+    setActive(seated);
   }
 
   let rafId = null;
   let settleTimer = null;
+  // Index we last commanded a scroll to, or null when scrolling has settled.
+  let commanded = null;
 
   // `scrollend` fires only once momentum has fully stopped, which is exactly
   // when it's safe to teleport. Where it isn't supported we debounce the
@@ -165,7 +210,13 @@ document.addEventListener("DOMContentLoaded", () => {
     "scroll",
     () => {
       if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => setActive(centerIndex()));
+      rafId = requestAnimationFrame(() => {
+        
+        // FIX: Removed keepInBand() so we don't yank scrollLeft
+        // mid-swipe, preventing the laggy duplicated overlay.
+        setActive(centerIndex());
+        
+      });
 
       if (!supportsScrollEnd) {
         clearTimeout(settleTimer);
@@ -175,22 +226,35 @@ document.addEventListener("DOMContentLoaded", () => {
     { passive: true }
   );
 
-  if (supportsScrollEnd) track.addEventListener("scrollend", normalize);
+  if (supportsScrollEnd) {
+    track.addEventListener("scrollend", () => {
+      track.classList.remove("is-scrolling");
+      normalize();
+    });
+  }
 
   /* Step one slide in either direction.
-     Rapid clicking can outrun the 140ms settle timer and walk off the end of
-     the cloned strip, so if the next step would land out of range we re-seat
-     into the middle copy first (instantly, invisibly) and step from there.
-     That keeps the arrows working forever in both directions. */
+
+     `commanded` remembers the index we last told the browser to scroll to.
+     Without it, a second click arriving mid-animation would read
+     centerIndex() — still showing the slide we're scrolling AWAY from — and
+     re-issue the same target, so the click would be silently swallowed.
+
+     We re-seat into the middle copy on EVERY step, before moving. Since
+     seated is always in [N, 2N-1], the target is always in [N-1, 2N] — a
+     slide that is guaranteed to exist AND to have neighbours on both sides.
+     So no amount of fast clicking can reach the end of the strip. */
   function step(delta) {
-    const i = centerIndex();
-    let target = i + delta;
-    if (LOOPED && (target < 0 || target >= slides.length)) {
-      const seated = N + realIndexOf(i);
-      goTo(seated, "auto");
-      target = seated + delta;
-    }
+    const base = seat(commanded !== null ? commanded : centerIndex());
+    const target = base + delta;
+    commanded = target;
     goTo(target, "smooth");
+    /* Deliberately NOT setActive(target) here. Marking the destination
+       active while the scroll is still in transit strips .is-active from
+       the slide you're currently looking at, dimming it to opacity .55 /
+       scale .92 mid-click — which reads as a stutter. The scroll handler
+       below drives .is-active from the actual centred slide instead, so
+       whatever is under your eyes is always the highlighted one. */
   }
 
   prevBtn.addEventListener("click", () => step(-1));
@@ -239,9 +303,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = projectData[projectId];
     if (!data) return;
 
-    projectImage.className = "side-panel__image placeholder-media " + data.imageClass;
+    // Real image if the markdown supplied one, otherwise the gradient.
+    if (data.image) {
+      projectImage.className = "side-panel__image";
+      projectImage.style.backgroundImage = `url('${data.image}')`;
+      projectImage.style.backgroundSize = "cover";
+      projectImage.style.backgroundPosition = "center";
+    } else {
+      projectImage.className =
+        "side-panel__image placeholder-media placeholder-media--" + data.accent;
+      projectImage.style.backgroundImage = "";
+    }
+
     projectTitle.textContent = data.title;
-    projectGithub.href = data.github;
+
+    // Hide the GitHub icon entirely when the project has no repo.
+    if (data.github) {
+      projectGithub.href = data.github;
+      projectGithub.hidden = false;
+    } else {
+      projectGithub.hidden = true;
+    }
+
     projectBody.innerHTML = data.body;
 
     openPanel(projectPanel);

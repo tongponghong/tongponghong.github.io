@@ -167,10 +167,25 @@
         const res = gl.getUniformLocation(program, 'res');
         const time = gl.getUniformLocation(program, 'time');
 
+        // ---- Performance -------------------------------------------------
+        // This fragment shader costs ~460 sin() ops per pixel per frame
+        // (23 fBm calls x 5 octaves x 4 hashes). At devicePixelRatio 2 that
+        // is ~100 billion ops/sec, which pins the GPU and leaves no frame
+        // budget for scrolling -- causing visible stutter.
+        //
+        // The shader is a soft, blurry cloud sitting behind a ~75% opaque
+        // veil, so rendering it below native resolution is imperceptible.
+        // The canvas is then scaled back up to full size by CSS.
+        //
+        // 0.5 = quarter the pixels of dpr 1. Raise toward 1.0 for more
+        // detail, lower toward 0.35 if you still see stutter.
+        const RENDER_SCALE = 0.5;
+        // ------------------------------------------------------------------
+
         function resize() {
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            canvas.width = Math.round(canvas.clientWidth * dpr);
-            canvas.height = Math.round(canvas.clientHeight * dpr);
+            const dpr = Math.min(window.devicePixelRatio || 1, 2) * RENDER_SCALE;
+            canvas.width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+            canvas.height = Math.max(1, Math.round(canvas.clientHeight * dpr));
             if (canvasId == 'shader-footer') {
                 gl.viewport(0, 0, canvas.width, canvas.height);
                 gl.uniform2f(res, canvas.width * 4, canvas.height * 4);
@@ -185,12 +200,42 @@
         resize();
 
         let start = performance.now();
+        let running = false;
+
         function render(now) {
+            if (!running) return;
             gl.uniform1f(time, (now - start) * 0.001);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
-            if (!prefersReducedMotion) requestAnimationFrame(render);
+            if (prefersReducedMotion) { running = false; return; } // draw one frame only
+            requestAnimationFrame(render);
         }
-        requestAnimationFrame(render);
+
+        function startLoop() {
+            if (running) return;
+            running = true;
+            requestAnimationFrame(render);
+        }
+
+        function stopLoop() {
+            running = false;
+        }
+
+        startLoop();
+
+        // Don't burn GPU animating a canvas that's scrolled out of view --
+        // that work otherwise competes for frames with whatever you ARE
+        // looking at further down the page.
+        if ('IntersectionObserver' in window) {
+            new IntersectionObserver(
+                (entries) => { entries[0].isIntersecting ? startLoop() : stopLoop(); },
+                { threshold: 0 }
+            ).observe(canvas);
+        }
+
+        // Likewise when the tab is hidden.
+        document.addEventListener('visibilitychange', () => {
+            document.hidden ? stopLoop() : startLoop();
+        });
     }
 
     initShaderCanvas('shader-header');

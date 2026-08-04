@@ -1,0 +1,35 @@
+# ---------------------------------------------------------------------------
+# Minimal, themeless Jekyll config.
+#
+# There is deliberately no `theme:` or `remote_theme:` here — the site ships
+# its own CSS in assets/css/style.css. Jekyll is used purely as a templating
+# and markdown layer, so it can't fight the design.
+# ---------------------------------------------------------------------------
+
+title: Tunger Hong
+description: Portfolio
+url: "https://tongponghong.github.io"
+baseurl: ""
+
+# Projects collection.
+# Each file in _projects/ becomes one entry, and feeds ALL FOUR places a
+# project appears: the carousel slide, the caption bar, the resume link,
+# and the sliding detail panel.
+#
+# output: false — projects are rendered inline on the one-page site rather
+# than each getting its own standalone URL.
+collections:
+  projects:
+    output: false
+
+# Markdown engine (GitHub Pages default)
+markdown: kramdown
+kramdown:
+  input: GFM
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - .ruby-lsp
+  - vendor
