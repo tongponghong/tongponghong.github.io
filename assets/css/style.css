@@ -216,7 +216,7 @@ button {
    than .carousel-slide (0,1,0), so no !important needed. */
 .carousel-track.is-teleporting .carousel-slide,
 .carousel-track.is-teleporting .play-btn {
-  transition: none;
+  transition: none !important;
 }
 
 /* Mandatory snapping re-runs its settle animation when scrollLeft is set
@@ -576,16 +576,16 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  color: var(--color-text);
+  /* colour rather than opacity, so the currentColor SVG icons stay crisp
+     instead of being composited against the card background */
+  color: rgba(19, 14, 1, 0.85);
   text-decoration: none;
-  opacity: 0.85;
   overflow-wrap: anywhere; /* long email shouldn't overflow the narrow column */
-  transition: color 0.2s ease, opacity 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .contact-link:hover {
   color: var(--color-button);
-  opacity: 1;
 }
 
 .contact-icon {
@@ -695,8 +695,11 @@ button {
 
 .side-panel__body {
   font-size: 1rem;
+  /* NOTE: do not use `opacity` here. Opacity applies to the whole subtree,
+     so it would also fade images, figures and video embeds into the panel
+     background. Soften the text via the colour channel instead, which
+     leaves media at full strength. */
   color: var(--color-text);
-  opacity: 0.85;
 }
 
 /* --- Rendered markdown inside the project panel --- */
@@ -742,7 +745,10 @@ button {
 
 .side-panel__body figcaption {
   font-size: 0.85rem;
-  opacity: 0.6;
+  /* colour, not opacity — a figcaption sits inside <figure> alongside the
+     image, and opacity here is safe, but keeping it consistent avoids the
+     same trap if the caption ever gains an icon or thumbnail. */
+  color: rgba(19, 14, 1, 0.6);
   margin-top: 6px;
 }
 
