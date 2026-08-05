@@ -630,11 +630,23 @@ button {
   transform: translateX(0);
 }
 
+/* Close button.
+   ------------------------------------------------------------------
+   TO REPOSITION, change these two values:
+       top    -> distance from the top of the panel
+       margin -> the `20px` is the distance from the RIGHT edge
+   e.g. `top: 16px` + `margin: 0 16px 0 auto` sits it tighter into
+   the corner. Both are plain pixel gaps; no other numbers depend on them.
+
+   `margin-left: auto` on a fixed-width block pushes it flush right,
+   which is why this stays aligned no matter how the panel is padded.
+   (It previously used `left: 100%` + a translateX magic number, which
+   drifted whenever the surrounding layout changed.)
+   ------------------------------------------------------------------ */
 .side-panel__close {
   position: sticky;
   top: 20px;
-  left: 100%;
-  transform: translateX(-56px);
+  margin: 0 20px 0 auto;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -647,7 +659,13 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  /* above the media and the coloured title band */
+  z-index: 3;
+  box-shadow: 0 2px 10px rgba(19, 14, 1, 0.22);
+}
+
+.side-panel__close:hover {
+  background: var(--color-elevated);
 }
 
 .side-panel__content {
@@ -655,42 +673,80 @@ button {
   margin-top: -40px;
 }
 
-.side-panel__image {
-  width: 100%;
+/* Media slot: holds either a YouTube demo reel, a still image, or the
+   gradient fallback. Full-bleed to the panel edges via negative margins
+   that cancel .side-panel__content's horizontal padding. */
+.side-panel__media {
+  position: relative;
+  margin: 0 -48px;
   aspect-ratio: 16 / 9;
-  border-radius: var(--radius-md);
-  margin-bottom: 24px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
 }
 
+/* An embedded video fills the slot exactly like a background image would */
+.side-panel__media iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* Title bar sits directly under the media as a solid colour band */
 .side-panel__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin: 0 -48px 28px;
+  padding: 20px 48px;
+  background: var(--color-header);
 }
 
 .side-panel__title {
-  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
   margin: 0;
+  color: #F9F5EB;
 }
 
+/* Cream circle on the blue band — the previous --color-button fill was
+   too close to --color-header to read against it. */
 .side-panel__github {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--color-button);
-  color: var(--color-bg);
+  background: var(--color-bg);
+  color: var(--color-button);
   display: flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .side-panel__github:hover {
-  background: var(--color-button-hover);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  transform: scale(1.06);
+}
+
+/* --- Size dials for the GitHub button ---
+   `width`/`height` on .side-panel__github above sets the CIRCLE (44px).
+   The rule below sets the MARK inside it. Change this number alone to
+   make the logo bigger or smaller without resizing the circle. */
+.side-panel__github svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* The About panel has a bare title with no band, so keep it on the
+   text colour rather than inheriting the white used on the blue bar. */
+.side-panel--about .side-panel__title {
+  color: var(--color-header);
 }
 
 .side-panel__body {
@@ -818,5 +874,15 @@ button {
 
   .side-panel__content {
     padding: 0 24px 48px;
+  }
+
+  /* Re-match the full-bleed offsets to the narrower mobile padding */
+  .side-panel__media {
+    margin: 0 -24px;
+  }
+
+  .side-panel__header {
+    margin: 0 -24px 22px;
+    padding: 16px 24px;
   }
 }

@@ -12,11 +12,34 @@ document.addEventListener("DOMContentLoaded", () => {
     projectData[tpl.dataset.project] = {
       title: tpl.dataset.title || "",
       github: tpl.dataset.github || "",
+      video: tpl.dataset.video || "",
       image: tpl.dataset.image || "",
       accent: tpl.dataset.accent || "a",
       body: tpl.innerHTML,
     };
   });
+
+  /* Turn whatever the markdown's `video:` field contains into an embed URL.
+     Accepts a watch?v= link, a youtu.be link, an /embed/ link, or a bare
+     video ID, so you can paste straight from the address bar. */
+  function youtubeEmbedUrl(value) {
+    const s = String(value || "").trim();
+    if (!s) return null;
+
+    const patterns = [
+      /[?&]v=([A-Za-z0-9_-]{6,})/, // youtube.com/watch?v=ID
+      /youtu\.be\/([A-Za-z0-9_-]{6,})/, // youtu.be/ID
+      /youtube\.com\/embed\/([A-Za-z0-9_-]{6,})/, // youtube.com/embed/ID
+      /youtube\.com\/shorts\/([A-Za-z0-9_-]{6,})/, // youtube.com/shorts/ID
+    ];
+    for (const re of patterns) {
+      const m = s.match(re);
+      if (m) return "https://www.youtube.com/embed/" + m[1];
+    }
+    // Bare ID
+    if (/^[A-Za-z0-9_-]{6,}$/.test(s)) return "https://www.youtube.com/embed/" + s;
+    return null;
+  }
 
   /* =======================================================
      Carousel
@@ -62,6 +85,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const slides = Array.from(track.querySelectorAll(".carousel-slide"));
   const realIndexOf = (i) => ((i % N) + N) % N;
+
+  /* YouTube only generates maxresdefault.jpg for videos uploaded above a
+     certain resolution; otherwise it 404s or serves a 120x90 grey stub.
+     Probe once per video ID and fall back to hqdefault.jpg, which always
+     exists — its 4:3 letterboxing crops away exactly under
+     `background-size: cover`, leaving a clean 16:9 frame.
+     Runs after cloning so the duplicated slides get fixed too. */
+  (function resolveYouTubeThumbnails() {
+    const byId = new Map();
+    track.querySelectorAll(".carousel-slide__media[data-yt]").forEach((el) => {
+      const id = el.dataset.yt;
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(el);
+    });
+
+    byId.forEach((nodes, id) => {
+      const probe = new Image();
+      const useFallback = () => {
+        const url = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+        nodes.forEach((n) => (n.style.backgroundImage = `url('${url}')`));
+      };
+      probe.onerror = useFallback;
+      probe.onload = () => {
+        if (probe.naturalWidth <= 120) useFallback(); // the grey stub
+      };
+      probe.src = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+    });
+  })();
 
   // Scroll offset that puts a given slide dead-center in the viewport.
   function centerOffset(slide) {
@@ -288,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const overlay = document.getElementById("overlay");
   const projectPanel = document.getElementById("projectPanel");
   const projectPanelClose = document.getElementById("projectPanelClose");
-  const projectImage = document.getElementById("projectImage");
+  const projectMedia = document.getElementById("projectMedia");
   const projectTitle = document.getElementById("projectTitle");
   const projectGithub = document.getElementById("projectGithub");
   const projectBody = document.getElementById("projectBody");
@@ -303,16 +354,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = projectData[projectId];
     if (!data) return;
 
-    // Real image if the markdown supplied one, otherwise the gradient.
-    if (data.image) {
-      projectImage.className = "side-panel__image";
-      projectImage.style.backgroundImage = `url('${data.image}')`;
-      projectImage.style.backgroundSize = "cover";
-      projectImage.style.backgroundPosition = "center";
+    /* Header media, in priority order: demo reel > still image > gradient. */
+    const embed = youtubeEmbedUrl(data.video);
+    projectMedia.innerHTML = "";
+    projectMedia.style.backgroundImage = "";
+
+    if (embed) {
+      projectMedia.className = "side-panel__media";
+      const frame = document.createElement("iframe");
+      frame.src = embed;
+      frame.title = data.title;
+      frame.allow =
+        "accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      frame.allowFullscreen = true;
+      frame.loading = "lazy";
+      projectMedia.appendChild(frame);
+    } else if (data.image) {
+      projectMedia.className = "side-panel__media";
+      projectMedia.style.backgroundImage = `url('${data.image}')`;
     } else {
-      projectImage.className =
-        "side-panel__image placeholder-media placeholder-media--" + data.accent;
-      projectImage.style.backgroundImage = "";
+      projectMedia.className =
+        "side-panel__media placeholder-media placeholder-media--" + data.accent;
     }
 
     projectTitle.textContent = data.title;
@@ -347,6 +409,17 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.classList.remove("is-visible");
     document.body.style.overflow = "";
     if (openPanelEl === panel) openPanelEl = null;
+
+    /* Tearing down the iframe is what actually stops YouTube playback —
+       hiding the panel alone leaves the audio running. Delayed until the
+       slide-out finishes so the video doesn't vanish mid-animation. */
+    if (panel === projectPanel) {
+      setTimeout(() => {
+        if (!projectPanel.classList.contains("is-open")) {
+          projectMedia.innerHTML = "";
+        }
+      }, 450);
+    }
   }
 
   function closeAllPanels() {

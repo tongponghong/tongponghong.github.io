@@ -1,6 +1,9 @@
 ---
 title: "Scotty3D"
 caption: "[Add a one-line caption for the carousel]"
+# Demo reel for the panel header. Accepts a full YouTube URL, a youtu.be
+# link, an /embed/ URL, or a bare video ID. Takes priority over `image`.
+video: ""
 github: ""
 image: "/assets/images/Glass_beachy_drag_512.png"
 accent: "b"

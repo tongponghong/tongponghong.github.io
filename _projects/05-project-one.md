@@ -6,6 +6,9 @@ title: "[Project One Title]"
 caption: "[Caption placeholder for Project One]"
 
 # GitHub icon in the panel header. Leave blank to hide the icon.
+# Demo reel for the panel header. Accepts a full YouTube URL, a youtu.be
+# link, an /embed/ URL, or a bare video ID. Takes priority over `image`.
+video: ""
 github: ""
 
 # Card / panel image. Leave blank to fall back to the gradient placeholder.
