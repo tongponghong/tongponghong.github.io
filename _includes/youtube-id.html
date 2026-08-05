@@ -1,0 +1,18 @@
+{%- comment -%}
+  Extracts a YouTube video ID from any common URL form.
+  Usage: {% capture id %}{% include youtube-id.html url=some.video %}{% endcapture %}
+  Accepts watch?v=, youtu.be/, /embed/, /shorts/, or a bare ID.
+  Outputs an empty string when `url` is blank.
+{%- endcomment -%}
+{%- assign v = include.url | default: '' | strip -%}
+{%- if v contains 'v=' -%}
+{{- v | split: 'v=' | last | split: '&' | first -}}
+{%- elsif v contains 'youtu.be/' -%}
+{{- v | split: 'youtu.be/' | last | split: '?' | first -}}
+{%- elsif v contains '/embed/' -%}
+{{- v | split: '/embed/' | last | split: '?' | first -}}
+{%- elsif v contains '/shorts/' -%}
+{{- v | split: '/shorts/' | last | split: '?' | first -}}
+{%- elsif v != '' -%}
+{{- v -}}
+{%- endif -%}

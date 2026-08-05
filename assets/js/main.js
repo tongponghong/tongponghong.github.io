@@ -334,6 +334,65 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* =======================================================
+     Autoscroll — advance one slide every 5s
+     -------------------------------------------------------
+     Deliberately paused whenever advancing would be rude or
+     wasted: pointer over the carousel, a panel open, tab in
+     the background, or the carousel scrolled out of view.
+     Any manual interaction restarts the countdown so it never
+     yanks the slide out from under someone mid-swipe.
+     ======================================================= */
+  const AUTOSCROLL_MS = 5000;
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  let autoTimer = null;
+  let pointerOver = false;
+  let carouselInView = true;
+
+  function autoPaused() {
+    return (
+      pointerOver ||
+      document.hidden ||
+      !carouselInView ||
+      document.querySelector(".side-panel.is-open") !== null
+    );
+  }
+
+  function scheduleAuto() {
+    clearTimeout(autoTimer);
+    if (prefersReducedMotion || !LOOPED) return;
+    autoTimer = setTimeout(() => {
+      if (!autoPaused()) step(1);
+      scheduleAuto();
+    }, AUTOSCROLL_MS);
+  }
+
+  // Any deliberate interaction resets the countdown.
+  const resetAuto = () => scheduleAuto();
+  ["pointerdown", "wheel", "touchstart", "keydown"].forEach((evt) =>
+    track.addEventListener(evt, resetAuto, { passive: true })
+  );
+  prevBtn.addEventListener("click", resetAuto);
+  nextBtn.addEventListener("click", resetAuto);
+  dotsWrap.addEventListener("click", resetAuto);
+
+  const section = document.querySelector(".carousel-section");
+  section.addEventListener("pointerenter", () => (pointerOver = true));
+  section.addEventListener("pointerleave", () => (pointerOver = false));
+  document.addEventListener("visibilitychange", scheduleAuto);
+
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(
+      (entries) => (carouselInView = entries[0].isIntersecting),
+      { threshold: 0.25 }
+    ).observe(section);
+  }
+
+  scheduleAuto();
+
+  /* =======================================================
      Side panels (project + about)
      ======================================================= */
   const overlay = document.getElementById("overlay");
@@ -417,6 +476,9 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         if (!projectPanel.classList.contains("is-open")) {
           projectMedia.innerHTML = "";
+          // Also kills any gallery videos the visitor started playing.
+          // Repopulated from the <template> on next open.
+          projectBody.innerHTML = "";
         }
       }, 450);
     }
@@ -436,6 +498,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeAllPanels();
+  });
+
+  /* =======================================================
+     Video gallery — click a tile to swap in the real iframe
+     (delegated, because the body HTML is injected per project)
+     ======================================================= */
+  projectBody.addEventListener("click", (e) => {
+    const tile = e.target.closest(".video-tile");
+    if (!tile || !projectBody.contains(tile)) return;
+
+    const id = tile.dataset.yt;
+    if (!id) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "video-embed";
+
+    const frame = document.createElement("iframe");
+    // autoplay=1 so the click that loads it also starts it
+    frame.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+    frame.allow =
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    frame.allowFullscreen = true;
+    frame.title = tile.getAttribute("aria-label") || "Video";
+
+    wrap.appendChild(frame);
+    tile.replaceWith(wrap);
   });
 
   // Resume "Projects" links open the matching project panel

@@ -31,7 +31,7 @@
 <!-- ?v= is a cache buster. Chrome caches file:// and localhost assets hard,
      so edits can appear to "do nothing". Bump this number after any change
      to the CSS/JS if a refresh doesn't seem to pick it up. -->
-<link rel="stylesheet" href="assets/css/style.css?v=11" />
+<link rel="stylesheet" href="assets/css/style.css?v=12" />
 </head>
 <body>
 
@@ -70,19 +70,8 @@
   The ID is pulled out here (server-side) so the card is a plain static
   background — no JS needed for the common case.
 {%- endcomment -%}
-{%- assign v = p.video | default: '' | strip -%}
-{%- assign yt = '' -%}
-{%- if v contains 'v=' -%}
-  {%- assign yt = v | split: 'v=' | last | split: '&' | first -%}
-{%- elsif v contains 'youtu.be/' -%}
-  {%- assign yt = v | split: 'youtu.be/' | last | split: '?' | first -%}
-{%- elsif v contains '/embed/' -%}
-  {%- assign yt = v | split: '/embed/' | last | split: '?' | first -%}
-{%- elsif v contains '/shorts/' -%}
-  {%- assign yt = v | split: '/shorts/' | last | split: '?' | first -%}
-{%- elsif v != '' -%}
-  {%- assign yt = v -%}
-{%- endif -%}
+{%- capture yt -%}{%- include youtube-id.html url=p.video -%}{%- endcapture -%}
+{%- assign yt = yt | strip -%}
 {%- assign card_bg = '' -%}
 {%- assign card_from_yt = false -%}
 {%- if p.image and p.image != '' -%}
@@ -200,7 +189,6 @@
               </div>
               <ul class="resume-entry__list">
                 <li>Engineered and optimized data-processing pipelines for heart-failure monitoring and chemical-sensor studies, improving analysis throughput and reliability.</li>
-                <li>Created calibration workflows and analytical visualizations, enabling the research team to rapidly interpret and act on experimental results.</li>
                 <li>Developed the backend foundation for an interactive data-visualization web application, designed for scalability and seamless integration with future database systems.</li>
               </ul>
             </div>
@@ -219,17 +207,7 @@
 
         <div class="resume-col resume-col--side">
 
-          <section class="resume-block">
-            <h2>Courses</h2>
-            <ul class="resume-tag-list">
-              <li>[Skill]</li>
-              <li>[Skill]</li>
-              <li>[Skill]</li>
-              <li>[Skill]</li>
-            </ul>
-          </section>
-
-          <section class="resume-block">
+           <section class="resume-block">
             <h2>Contact</h2>
             <ul class="resume-contact-list">
               <li>
@@ -271,6 +249,27 @@
               </li>
             </ul>
           </section>
+
+          <section class="resume-block">
+            <h2>Languages</h2>
+            <ul class="resume-tag-list">
+              <li>Python</li>
+              <li>C++/Vulkan</li>
+              <li>C</li>
+              <li>x86 ASM</li>
+              <li>Matlab</li>
+              <li>System Verilog</li>
+            </ul>
+          </section>
+
+          <section class="resume-block">
+            <h2>Courses</h2>
+            <ul class="resume-entry__list">
+              <li>15-472: Real Time Computer Graphics</li>
+              <li>15-362: Computer Graphics</li>
+              <li>18-213: Computer Systems</li>
+            </ul>
+          </section> 
 
         </div>
 
@@ -331,10 +330,24 @@
           data-github="{{ p.github }}"
           data-video="{{ p.video }}"
           data-image="{{ p.image | relative_url }}"
-          data-accent="{{ p.accent | default: 'a' }}">{{ p.content | markdownify }}</template>
+          data-accent="{{ p.accent | default: 'a' }}">{{ p.content | markdownify }}{%- if p.gallery and p.gallery.size > 0 -%}
+<div class="video-gallery">
+{%- for g in p.gallery -%}
+{%- capture gid %}{% include youtube-id.html url=g.video %}{% endcapture -%}
+{%- assign gid = gid | strip -%}
+{%- if gid != '' -%}
+  <button class="video-tile" type="button" data-yt="{{ gid }}" aria-label="Play {{ g.title | default: 'video' | escape }}">
+    <span class="video-tile__thumb" style="background-image:url('https://img.youtube.com/vi/{{ gid }}/hqdefault.jpg')"></span>
+    <span class="video-tile__play" aria-hidden="true"></span>
+    {%- if g.title %}<span class="video-tile__title">{{ g.title }}</span>{% endif -%}
+  </button>
+{%- endif -%}
+{%- endfor -%}
+</div>
+{%- endif -%}</template>
 {% endfor %}
 
-<script src="assets/js/shader-header.js?v=11"></script>
-<script src="assets/js/main.js?v=11"></script>
+<script src="assets/js/shader-header.js?v=12"></script>
+<script src="assets/js/main.js?v=12"></script>
 </body>
 </html>

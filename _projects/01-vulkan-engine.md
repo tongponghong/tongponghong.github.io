@@ -8,6 +8,18 @@ github: "https://gitshare.me/repo/93dd892d-e82e-485a-a0cb-bd1ebb93e055"
 image: "/assets/images/pipeline.png"
 accent: "a"
 order: 1
+
+# Video gallery, rendered as a click-to-play grid below the body text.
+# Same URL forms as `video:` above. `title` is optional.
+gallery:
+  - title: "Material handling — environment, mirror, lambertian"
+    video: "https://www.youtube.com/embed/fpfjndMU4Q0"
+  - title: "Exposure and tone mapping"
+    video: "https://www.youtube.com/embed/tLFHz6ZQ3hQ"
+  - title: "Light types — sun, sphere, spotlights"
+    video: "https://www.youtube.com/embed/erEVJRJYJcw"
+  - title: "Lighting, continued"
+    video: "https://www.youtube.com/embed/A0SB9y2WdwI"
 ---
 
 ## Vulkan Graphics Engine
@@ -17,18 +29,7 @@ In Spring of 2026, I took the class 15472- Real-time Computer Graphics, in which
 
 ### I've built in the following features:
 
-Various material handling (environment, mirror, lambertian)
-
-<iframe src="https://www.youtube.com/embed/fpfjndMU4Q0" frameborder="0" allowfullscreen="true"></iframe>
-
-Exposure and tone mapping
-
-<iframe src="https://www.youtube.com/embed/tLFHz6ZQ3hQ" frameborder="0" allowfullscreen="true"></iframe>
-
-Different types of lights (sun, sphere, and spotlights)
-
-<iframe src="https://www.youtube.com/embed/erEVJRJYJcw" frameborder="0" allowfullscreen="true"></iframe>
-
-<iframe src="https://www.youtube.com/embed/A0SB9y2WdwI" frameborder="0" allowfullscreen="true"></iframe>
+Various material handling (environment, mirror, lambertian), exposure and
+tone mapping, and different types of lights (sun, sphere, and spotlights).
 
 I plan on finishing up shadow mapping and PBR materials next.
