@@ -1,0 +1,91 @@
+# ===========================================================================
+# Resume content for the website.
+#
+# This drives the whole resume card in index.html — edit here, not in HTML.
+# Bullets accept markdown, so **bold** and [links](https://example.com) work.
+#
+# NOTE: this is the WEB resume only. The downloadable PDF is still built
+# from your LaTeX source; the two are deliberately independent so you keep
+# full control over the PDF's one-page fit. If you change a job here,
+# remember to update the .tex too (or vice versa).
+# ===========================================================================
+
+name: "Tunger Hong"
+tagline: ""
+
+# Download button in the resume header
+pdf: "/assets/pdfs/resume.pdf"
+
+# --------------------------------------------------------------- main column
+education:
+  heading: "Education"
+  entries:
+    - org: "Carnegie Mellon University"
+      date: "Expected May 2027"
+      role: "Electrical and Computer Engineering"
+      location: "Pittsburgh, PA"
+      bullets: []
+
+experience:
+  heading: "Experience"
+  entries:
+    - org: "SIGGRAPH"
+      date: "July 2026"
+      role: "Student Volunteer"
+      location: "Los Angeles, CA"
+      bullets:
+        - Supported technical sessions as part of a large volunteer team, managing room turnover and attendee flow between back-to-back talks.
+
+    - org: "Carnegie Mellon University"
+      date: "Jan 2026-"
+      role: "Teaching assistant for 15-362 Computer Graphics"
+      location: "Pittsburgh, PA"
+      bullets:
+        - Delivered a lecture on Bidirectional Reflectance Distribution Functions (BRDFs), Colors, and Radiometry, to a class of 50 students, covering various computer graphics theory.
+        - Directly contributed to course material, creating multiple assignments and guides for students. Edited recitation material.
+    - org: "Boston Scientific"
+      date: "May 2025 - Aug 2025"
+      role: "Software Intern"
+      location: "St. Paul, MN"
+      bullets:
+        - "Engineered and optimized data-processing pipelines for heart-failure monitoring and chemical-sensor studies, improving analysis throughput and reliability."
+        - Redesigned the file-storage architecture and built a robust Python library to ingest, process, and visualize CSV outputs.
+        - "Developed the backend foundation for an interactive data-visualization web application, designed for scalability and seamless integration with future database systems."
+
+# The entries themselves come from _projects/*.md, so this list can never
+# drift out of sync with the carousel — only the heading lives here.
+projects:
+  heading: "Projects"
+
+# --------------------------------------------------------------- side column
+contact:
+  heading: "Contact"
+  items:
+    # `icon` must be one of: email, github, linkedin
+    - icon: "email"
+      label: "tungerh@andrew.cmu.edu"
+      url: "mailto:tungerh@andrew.cmu.edu"
+    - icon: "github"
+      label: "tongponghong"
+      url: "https://github.com/tongponghong"
+    - icon: "linkedin"
+      label: "tunger-hong"
+      url: "https://www.linkedin.com/in/tunger-hong-08093a33b/"
+
+languages:
+  heading: "Languages"
+  items:
+    - "Python"
+    - "C++/Vulkan"
+    - "C"
+    - "x86 ASM"
+    - "Matlab"
+    - "System Verilog"
+
+courses:
+  heading: "Courses"
+  items:
+    - "15-472: Real Time Computer Graphics"
+    - "15-418: Parallel Computer Architecture and Programming"
+    - "15-463: Computational Photography"
+    - "15-362: Computer Graphics"

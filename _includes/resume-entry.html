@@ -1,0 +1,31 @@
+{%- comment -%}
+  One resume entry, rendered as the two-row layout:
+
+      Organisation (bold)        Dates (italic, right)
+      Role (italic)              Location (italic, right)
+      - bullets
+
+  Usage: {% include resume-entry.html entry=e %}
+  Bullets run through markdownify, with the wrapping <p> stripped so the
+  markup stays valid inside <li>.
+{%- endcomment -%}
+{%- assign e = include.entry -%}
+<div class="resume-entry">
+  <div class="resume-entry__row">
+    <span class="resume-entry__org">{{ e.org }}</span>
+    {%- if e.date %}<span class="resume-entry__date">{{ e.date }}</span>{% endif -%}
+  </div>
+  {%- if e.role or e.location %}
+  <div class="resume-entry__row">
+    <span class="resume-entry__role">{{ e.role }}</span>
+    {%- if e.location %}<span class="resume-entry__location">{{ e.location }}</span>{% endif -%}
+  </div>
+  {%- endif -%}
+  {%- if e.bullets and e.bullets.size > 0 %}
+  <ul class="resume-entry__list">
+    {%- for b in e.bullets %}
+    <li>{{ b | markdownify | remove: '<p>' | remove: '</p>' | strip }}</li>
+    {%- endfor %}
+  </ul>
+  {%- endif -%}
+</div>
