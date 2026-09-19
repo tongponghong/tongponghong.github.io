@@ -23,6 +23,13 @@
     uniform float time;
     uniform vec2 res;
 
+    // Cursor interaction. mouse is in the same pixel space as gl_FragCoord;
+    // mouseStrength fades 0 -> 1 on enter and decays back to 0 on leave,
+    // which is what lets the disturbance collapse.
+    // (No backticks in here - this whole block is a JS template literal.)
+    uniform vec2 mouse;
+    uniform float mouseStrength;
+
     // Referenced off of https://thebookofshaders.com/13/
     // Specifically domain warping, exploring fractal brownian motion with cloud/gas shapes
 
@@ -77,8 +84,57 @@
         return v;
     }
 
+    // ----------------------------------------------------------------
+    // Cursor disturbance.
+    //
+    // Displaces the sampling coordinate near the pointer rather than
+    // altering the colour, so the existing fBm pattern is what bends.
+    //
+    // Modelled on water parting around a rock: the field is nudged ASIDE
+    // and curves past, never drawn in.
+    //
+    //   part   - strictly OUTWARD. Never negative, so there is no phase
+    //            where the field is pulled toward the cursor. (The old
+    //            travelling-ring term oscillated sign, which is what read
+    //            as suction; it is gone.)
+    //   around - tangential drift, so streamlines curve past the obstacle
+    //            instead of just spreading straight outward.
+    //
+    // Both vanish at the exact cursor position via the core term, so the
+    // rock itself sits still and there is no singular pinch where the
+    // radial direction flips.
+    //
+    // Because this only offsets the input coordinate, driving
+    // mouseStrength back to 0 returns the exact original field - the
+    // disturbance collapses rather than leaving a scar.
+    // ----------------------------------------------------------------
+    vec2 disturb(in vec2 coord) {
+        if (mouseStrength <= 0.001) return coord;
+
+        vec2 m = mouse / res.y * 3.0;      // same space as coord
+        vec2 toM = coord - m;
+        float d = length(toM);
+
+        float radius = 0.55;
+        // gaussian: smooth, unbounded support, no hard edge at the rim
+        float infl = exp(-(d * d) / (radius * radius)) * mouseStrength;
+        if (infl <= 0.0005) return coord;
+
+        // Calm core - the obstacle itself barely moves
+        float core = smoothstep(0.0, 0.10, d);
+
+        vec2 dir = toM / max(d, 0.0001);
+        vec2 perp = vec2(-dir.y, dir.x);
+
+        float part   = 0.070 * infl * core;   // outward only
+        float around = 0.085 * infl * core;   // tangential
+
+        return coord + dir * part + perp * around;
+    }
+
     void main() {
         vec2 coord = (gl_FragCoord.xy) / res.y * 3.0;
+        coord = disturb(coord);
         vec3 color = vec3(0.0);
 
         vec2 q;
@@ -166,6 +222,8 @@
         // frag stuff
         const res = gl.getUniformLocation(program, 'res');
         const time = gl.getUniformLocation(program, 'time');
+        const uMouse = gl.getUniformLocation(program, 'mouse');
+        const uMouseStrength = gl.getUniformLocation(program, 'mouseStrength');
 
         // ---- Performance -------------------------------------------------
         // This fragment shader costs ~460 sin() ops per pixel per frame
@@ -199,13 +257,70 @@
         window.addEventListener('resize', resize);
         resize();
 
+        // ---- Cursor state -------------------------------------------------
+        // `targetX/Y` is where the pointer actually is; `curX/Y` chases it.
+        // That lag is what makes the disturbance feel like it's dragging
+        // through liquid instead of teleporting.
+        //
+        // `strength` eases toward 1 while the pointer is over the canvas and
+        // decays toward 0 once it leaves. Both use exponential smoothing, so
+        // the field relaxes back to its original shape on its own.
+        let targetX = 0, targetY = 0;
+        let curX = 0, curY = 0;
+        let targetStrength = 0, strength = 0;
+        let seeded = false;
+
+        const FOLLOW = 0.12;   // how fast the swirl chases the cursor
+        const RISE   = 0.09;   // ramp-up when the pointer arrives
+        const FALL   = 0.055;  // slower relax, so it "collapses" gently
+
+        function pointerTo(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            // Convert CSS px -> drawing-buffer px (RENDER_SCALE aware) and
+            // flip Y, because gl_FragCoord counts from the bottom.
+            targetX = ((clientX - rect.left) / rect.width) * canvas.width;
+            targetY = (1 - (clientY - rect.top) / rect.height) * canvas.height;
+            if (!seeded) { curX = targetX; curY = targetY; seeded = true; }
+        }
+
+        // Listen on the section so the effect still tracks while the pointer
+        // is over the carousel cards sitting on top of the canvas.
+        const hitArea = canvas.closest('.carousel-section') || canvas;
+
+        if (!prefersReducedMotion) {
+            hitArea.addEventListener('pointermove', (e) => {
+                pointerTo(e.clientX, e.clientY);
+                targetStrength = 1;
+            }, { passive: true });
+
+            hitArea.addEventListener('pointerleave', () => {
+                targetStrength = 0;
+            }, { passive: true });
+
+            // A touch shouldn't leave the ripple stuck on screen
+            hitArea.addEventListener('pointercancel', () => {
+                targetStrength = 0;
+            }, { passive: true });
+        }
+
         let start = performance.now();
         let running = false;
 
         function render(now) {
             if (!running) return;
+
+            // Exponential smoothing toward the pointer + target strength
+            curX += (targetX - curX) * FOLLOW;
+            curY += (targetY - curY) * FOLLOW;
+            strength += (targetStrength - strength) *
+                        (targetStrength > strength ? RISE : FALL);
+            if (strength < 0.0005) strength = 0;
+
+            gl.uniform2f(uMouse, curX, curY);
+            gl.uniform1f(uMouseStrength, strength);
             gl.uniform1f(time, (now - start) * 0.001);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
+
             if (prefersReducedMotion) { running = false; return; } // draw one frame only
             requestAnimationFrame(render);
         }

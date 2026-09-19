@@ -31,7 +31,7 @@
 <!-- ?v= is a cache buster. Chrome caches file:// and localhost assets hard,
      so edits can appear to "do nothing". Bump this number after any change
      to the CSS/JS if a refresh doesn't seem to pick it up. -->
-<link rel="stylesheet" href="assets/css/style.css?v=13" />
+<link rel="stylesheet" href="assets/css/style.css?v=15" />
 </head>
 <body>
 
@@ -167,11 +167,27 @@
             <h2>{{ site.data.resume.contact.heading }}</h2>
             <ul class="resume-contact-list">
 {%- for c in site.data.resume.contact.items %}
+{%- comment -%}
+  `url` is optional. A phone entry with only a label gets a tel: link built
+  from its digits, so resume.yml stays terse. Only http(s) links open in a
+  new tab — mailto:/tel: must stay in the same one or the handoff breaks.
+{%- endcomment -%}
+{%- assign href = c.url | default: '' | strip -%}
+{%- if href == '' and c.icon == 'phone' -%}
+  {%- assign href = c.label | replace: ' ', '' | replace: '-', '' | replace: '(', '' | replace: ')', '' | replace: '.', '' | prepend: 'tel:' -%}
+{%- endif -%}
               <li>
-                <a class="contact-link" href="{{ c.url }}"{% unless c.url contains 'mailto:' %} target="_blank" rel="noopener"{% endunless %}>
+                {%- if href != '' %}
+                <a class="contact-link" href="{{ href }}"{% if href contains '://' %} target="_blank" rel="noopener"{% endif %}>
                   {%- include contact-icon.html name=c.icon -%}
                   <span>{{ c.label }}</span>
                 </a>
+                {%- else %}
+                <span class="contact-link">
+                  {%- include contact-icon.html name=c.icon -%}
+                  <span>{{ c.label }}</span>
+                </span>
+                {%- endif %}
               </li>
 {%- endfor %}
             </ul>
@@ -271,7 +287,7 @@
 {%- endif -%}</template>
 {% endfor %}
 
-<script src="assets/js/shader-header.js?v=13"></script>
-<script src="assets/js/main.js?v=13"></script>
+<script src="assets/js/shader-header.js?v=15"></script>
+<script src="assets/js/main.js?v=15"></script>
 </body>
 </html>

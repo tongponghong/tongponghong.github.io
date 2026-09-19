@@ -3,11 +3,6 @@
 #
 # This drives the whole resume card in index.html — edit here, not in HTML.
 # Bullets accept markdown, so **bold** and [links](https://example.com) work.
-#
-# NOTE: this is the WEB resume only. The downloadable PDF is still built
-# from your LaTeX source; the two are deliberately independent so you keep
-# full control over the PDF's one-page fit. If you change a job here,
-# remember to update the .tex too (or vice versa).
 # ===========================================================================
 
 name: "Tunger Hong"
@@ -71,6 +66,9 @@ contact:
     - icon: "linkedin"
       label: "tunger-hong"
       url: "https://www.linkedin.com/in/tunger-hong-08093a33b/"
+    - icon: "phone"
+      label: "763-744-6802"
+      
 
 languages:
   heading: "Languages"
@@ -88,4 +86,4 @@ courses:
     - "15-472: Real Time Computer Graphics"
     - "15-418: Parallel Computer Architecture and Programming"
     - "15-463: Computational Photography"
-    - "15-362: Computer Graphics"
+    - "15-474: Neural Graphics"

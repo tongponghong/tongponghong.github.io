@@ -150,14 +150,14 @@ button {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(46, 86, 120, 1) 0%,
-      rgba(61, 100, 135, 0.25) 12%,
-      rgba(61, 100, 135, 0.25) 88%,
-      rgba(46, 86, 120, 1) 100%
-    );
+  /* Flat veil, no edge ramps.
+     The shader no longer dissolves into the cream page at the top/bottom —
+     the band keeps a clean edge and stays at a constant 75% shader
+     visibility all the way across. The fade now lives on the carousel
+     track instead (see .carousel-track's mask below), so it's the cards
+     that dissolve into the shader rather than the shader into the page.
+     Lower this alpha for more shader, raise it for less. */
+  background: rgba(61, 100, 135, 0.25);
 }
 
 .carousel-viewport {
@@ -182,6 +182,47 @@ button {
   padding: 8px 12% 24px;
   -ms-overflow-style: none;
   scrollbar-width: none;
+
+  /* Edge fade on the CARDS, not the shader.
+     Cards dissolve into the shader as they scroll toward either edge
+     instead of being hard-clipped at the viewport boundary. Eased with a
+     smoothstep curve (t²(3-2t)) so there's no banding in the ramp.
+     The arrows are siblings in .carousel-viewport, so they stay crisp.
+     Widen the 15% stops for a longer dissolve. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0.000) 0.00%,
+    rgba(0,0,0,0.074) 2.50%,
+    rgba(0,0,0,0.259) 5.00%,
+    rgba(0,0,0,0.500) 7.50%,
+    rgba(0,0,0,0.741) 10.00%,
+    rgba(0,0,0,0.926) 12.50%,
+    rgba(0,0,0,1.000) 15.00%,
+    rgba(0,0,0,1.000) 85.00%,
+    rgba(0,0,0,0.926) 87.50%,
+    rgba(0,0,0,0.741) 90.00%,
+    rgba(0,0,0,0.500) 92.50%,
+    rgba(0,0,0,0.259) 95.00%,
+    rgba(0,0,0,0.074) 97.50%,
+    rgba(0,0,0,0.000) 100.00%
+  );
+  mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0.000) 0.00%,
+    rgba(0,0,0,0.074) 2.50%,
+    rgba(0,0,0,0.259) 5.00%,
+    rgba(0,0,0,0.500) 7.50%,
+    rgba(0,0,0,0.741) 10.00%,
+    rgba(0,0,0,0.926) 12.50%,
+    rgba(0,0,0,1.000) 15.00%,
+    rgba(0,0,0,1.000) 85.00%,
+    rgba(0,0,0,0.926) 87.50%,
+    rgba(0,0,0,0.741) 90.00%,
+    rgba(0,0,0,0.500) 92.50%,
+    rgba(0,0,0,0.259) 95.00%,
+    rgba(0,0,0,0.074) 97.50%,
+    rgba(0,0,0,0.000) 100.00%
+  );
 }
 
 .carousel-track::-webkit-scrollbar {
