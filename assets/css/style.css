@@ -1035,3 +1035,205 @@ button {
     padding: 16px 24px;
   }
 }
+
+/* =========================================================
+   GALLERY PAGE
+   ========================================================= */
+.gallery-page {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+
+.gallery-header {
+  margin-bottom: 28px;
+}
+
+.gallery-title {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  margin: 0 0 20px;
+}
+
+/* ---- Tabs ---- */
+.gallery-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid rgba(19, 14, 1, 0.14);
+}
+
+.gallery-tab {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: rgba(19, 14, 1, 0.55);
+  padding: 10px 18px;
+  transition: color 0.2s ease;
+}
+
+.gallery-tab:hover {
+  color: var(--color-text);
+}
+
+.gallery-tab.is-active {
+  color: var(--color-button);
+  font-weight: 600;
+}
+
+/* Underline rides on the active tab, overlapping the container border */
+.gallery-tab::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transition: transform 0.22s ease;
+}
+
+.gallery-tab.is-active::after {
+  transform: scaleX(1);
+}
+
+.gallery-panel[hidden] {
+  display: none;
+}
+
+.gallery-empty {
+  padding: 56px 24px;
+  text-align: center;
+  color: rgba(19, 14, 1, 0.5);
+  background: var(--color-elevated);
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+}
+
+/* ---- Justified rows ----
+   Each <img> is a flex item with a fixed height, so its flex-basis is its
+   own aspect-correct width. flex-grow then stretches the row to fill the
+   line exactly, and object-fit:cover absorbs the stretch as a tiny crop
+   rather than distortion. Net effect: portrait and landscape mix freely
+   with no per-image configuration, the way Flickr or Google Photos pack
+   a grid. */
+.album {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.album-img {
+  height: 260px;
+  flex: 1 1 auto;
+  min-width: 120px;
+  max-width: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius-md);
+  cursor: zoom-in;
+  background: var(--color-elevated);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.album-img:hover,
+.album-img:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(19, 14, 1, 0.24);
+  outline: none;
+}
+
+/* Soaks up the slack on the final row so a lone trailing image isn't
+   stretched across the full width. */
+.album::after {
+  content: "";
+  flex-grow: 999;
+  height: 0;
+}
+
+/* ---- Lightbox ---- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(19, 14, 1, 0.88);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lightbox__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+.lightbox__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox__close:hover {
+  background: var(--color-accent);
+}
+
+/* Marks the current page in the top nav */
+.nav-link.is-current {
+  color: var(--color-button);
+  font-weight: 600;
+}
+
+.nav-link.is-current::after {
+  transform: scaleX(1);
+}
+
+/* The nav mixes <a> and <button>; normalise the anchor */
+a.nav-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+@media (max-width: 640px) {
+  .gallery-page {
+    padding: 28px 16px 64px;
+  }
+
+  .album-img {
+    height: 180px;
+  }
+
+  .gallery-tab {
+    padding: 10px 12px;
+    font-size: 0.88rem;
+  }
+
+  .lightbox {
+    padding: 16px;
+  }
+}

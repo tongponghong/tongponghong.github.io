@@ -20,12 +20,28 @@
 
     #define OCTAVES 5
 
+    // ---- Cursor gold highlight --------------------------------------
+    // The cursor tints existing filaments of the field gold rather than
+    // moving anything. The mask is cut from the field's OWN values, so
+    // the streaks land on the noise structure and read as parts of the
+    // pattern catching light, not as a shape laid on top.
+    //
+    //   GOLD_RADIUS  - how far from the cursor the highlight reaches
+    //   STREAK_LEVEL - which iso-level of the field lights up; raise
+    //                  toward the brighter crests, lower for coverage
+    //   STREAK_WIDTH - filament thickness (small = thin wisps)
+    //   STREAK_GAIN  - overall intensity; this is the "gentle" dial
+    #define GOLD_RADIUS 0.5
+    #define STREAK_LEVEL 0.58
+    #define STREAK_WIDTH 0.10
+    #define STREAK_GAIN 0.76
+
     uniform float time;
     uniform vec2 res;
 
     // Cursor interaction. mouse is in the same pixel space as gl_FragCoord;
     // mouseStrength fades 0 -> 1 on enter and decays back to 0 on leave,
-    // which is what lets the disturbance collapse.
+    // which is what lets the gold fade in and out.
     // (No backticks in here - this whole block is a JS template literal.)
     uniform vec2 mouse;
     uniform float mouseStrength;
@@ -69,8 +85,11 @@
         //                 sin(0.5),  cos(0.5));
 
         // interesting graininess... like water
-        mat2 rot = mat2(exp(0.5), -sin(0.75),
-                        sin(0.75),  exp(0.5));
+        // mat2 rot = mat2(exp(0.5), -sin(0.75),
+        //                 sin(0.75),  exp(0.5));
+
+        mat2 rot = mat2(exp(0.25), -sin(0.55),
+                        sin(0.55),  exp(0.25));
 
         // mat2 rot = mat2(exp(0.75), -exp(0.75),
         //                 exp(0.75),  exp(0.75));
@@ -84,57 +103,8 @@
         return v;
     }
 
-    // ----------------------------------------------------------------
-    // Cursor disturbance.
-    //
-    // Displaces the sampling coordinate near the pointer rather than
-    // altering the colour, so the existing fBm pattern is what bends.
-    //
-    // Modelled on water parting around a rock: the field is nudged ASIDE
-    // and curves past, never drawn in.
-    //
-    //   part   - strictly OUTWARD. Never negative, so there is no phase
-    //            where the field is pulled toward the cursor. (The old
-    //            travelling-ring term oscillated sign, which is what read
-    //            as suction; it is gone.)
-    //   around - tangential drift, so streamlines curve past the obstacle
-    //            instead of just spreading straight outward.
-    //
-    // Both vanish at the exact cursor position via the core term, so the
-    // rock itself sits still and there is no singular pinch where the
-    // radial direction flips.
-    //
-    // Because this only offsets the input coordinate, driving
-    // mouseStrength back to 0 returns the exact original field - the
-    // disturbance collapses rather than leaving a scar.
-    // ----------------------------------------------------------------
-    vec2 disturb(in vec2 coord) {
-        if (mouseStrength <= 0.001) return coord;
-
-        vec2 m = mouse / res.y * 3.0;      // same space as coord
-        vec2 toM = coord - m;
-        float d = length(toM);
-
-        float radius = 0.55;
-        // gaussian: smooth, unbounded support, no hard edge at the rim
-        float infl = exp(-(d * d) / (radius * radius)) * mouseStrength;
-        if (infl <= 0.0005) return coord;
-
-        // Calm core - the obstacle itself barely moves
-        float core = smoothstep(0.0, 0.10, d);
-
-        vec2 dir = toM / max(d, 0.0001);
-        vec2 perp = vec2(-dir.y, dir.x);
-
-        float part   = 0.070 * infl * core;   // outward only
-        float around = 0.085 * infl * core;   // tangential
-
-        return coord + dir * part + perp * around;
-    }
-
     void main() {
         vec2 coord = (gl_FragCoord.xy) / res.y * 3.0;
-        coord = disturb(coord);
         vec3 color = vec3(0.0);
 
         vec2 q;
@@ -178,8 +148,42 @@
         //             vec3(0.01, 0.0, 0.5555), 
         //             clamp(length(s.y) / 2.0, 0.5, 0.7));
         
-        gl_FragColor = vec4((pow(f, 3.0) + 0.6 * pow(f, 2.0) + 0.5 * pow(f, 1.0)) * color * sin(color) / cos(color),
-                        1.0);
+        vec3 outCol = (pow(f, 3.0) + 0.6 * pow(f, 2.0) + 0.5 * pow(f, 1.0))
+                      * color * sin(color) / cos(color);
+
+// ---- Gold marble leaf highlights ----------------------------------
+        if (mouseStrength > 0.001) {
+            vec2 m = mouse / res.y * 3.0;
+
+            // 1. Warp coordinates slightly so streaks align with marble veins
+            vec2 warpedCoord = coord - r * 0.15;
+            float d = length(warpedCoord - m);
+
+            // 2. Cursor radial influence zone
+            float near = exp(-(d * d) / (GOLD_RADIUS * GOLD_RADIUS)) * mouseStrength;
+
+            if (near > 0.001) {
+                // 3. Create high-frequency vein contours across the noise surface
+                float veinPattern = abs(sin((f + s.x * 0.25) * 22.0));
+
+                // 4. Tight smoothstep bounds create razor-sharp edges like gilded foil
+                float streak = smoothstep(0.93, 0.99, veinPattern);
+
+                // 5. Organic break-up along the length to mimic aged gold leaf
+                float breakUp = smoothstep(0.20, 0.65, s.y);
+                float mask = streak * breakUp * near * STREAK_GAIN;
+
+                // 6. Metallic gold palette with a bright specular center
+                vec3 goldBase = vec3(0.90, 0.45, 0.23);       // Rich metallic gold
+                vec3 goldHighlight = vec3(1.0, 0.92, 0.62);  // Bright foil shimmer
+                vec3 goldColor = mix(goldBase, goldHighlight, pow(veinPattern, 6.0));
+
+                // 7. Opaque mix paints directly ON TOP of the base color
+                outCol = mix(outCol, goldColor, clamp(mask, 0.0, 1.0));
+            }
+        }
+
+        gl_FragColor = vec4(outCol, 1.0);
     }
         `;
 

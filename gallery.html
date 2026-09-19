@@ -1,0 +1,91 @@
+---
+layout: default
+nav: gallery
+title: Gallery
+permalink: /gallery/
+extra_js: /assets/js/gallery.js
+
+# ===========================================================================
+# Tabs are declared here. Each one reads every image sitting in
+#   assets/images/gallery/<dir>/
+# at build time - drop a file in and it appears, no config needed.
+# Add a tab by adding an entry; `dir` must match the folder name.
+# ===========================================================================
+tabs:
+  - id: paintings
+    label: Paintings
+    dir: paintings
+    empty: "No paintings yet. Drop images into assets/images/gallery/paintings/ and they'll show up here."
+  - id: photos
+    label: Photos
+    dir: photos
+    empty: "No photos yet. Drop images into assets/images/gallery/photos/ and they'll show up here."
+---
+
+<main id="top" class="gallery-page">
+
+  <header class="gallery-header">
+    <h1 class="gallery-title">Gallery</h1>
+
+    <div class="gallery-tabs" role="tablist">
+{%- for t in page.tabs %}
+      <button class="gallery-tab{% if forloop.first %} is-active{% endif %}"
+              type="button"
+              role="tab"
+              id="tab-{{ t.id }}"
+              aria-controls="panel-{{ t.id }}"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              data-tab="{{ t.id }}">{{ t.label }}</button>
+{%- endfor %}
+    </div>
+  </header>
+
+{%- for t in page.tabs %}
+{%- comment -%}
+  Collect every static file under this tab's folder. Jekyll exposes those
+  as site.static_files, so no manifest to maintain. Sorted by filename,
+  so a 01- / 02- prefix is how you control order.
+{%- endcomment -%}
+{%- assign prefix = '/assets/images/gallery/' | append: t.dir | append: '/' -%}
+{%- assign shots = site.static_files
+      | where_exp: "f", "f.path contains prefix"
+      | sort: "name" -%}
+
+  <section class="gallery-panel{% if forloop.first %} is-active{% endif %}"
+           id="panel-{{ t.id }}"
+           role="tabpanel"
+           aria-labelledby="tab-{{ t.id }}"
+           {% unless forloop.first %}hidden{% endunless %}>
+
+{%- if shots.size > 0 %}
+{%- comment -%}
+  The <img> is the flex item itself, deliberately - not wrapped in a
+  button. A replaced element with a fixed height reports its aspect-
+  correct width as its flex-basis, which is what lets rows justify
+  without anyone declaring each image's dimensions.
+{%- endcomment -%}
+    <div class="album">
+{%- for img in shots %}
+      <img class="album-img"
+           src="{{ img.path | relative_url }}"
+           data-full="{{ img.path | relative_url }}"
+           alt="{{ img.basename | replace: '-', ' ' | replace: '_', ' ' | escape }}"
+           role="button"
+           tabindex="0"
+           loading="lazy" />
+{%- endfor %}
+    </div>
+{%- else %}
+    <p class="gallery-empty">{{ t.empty }}</p>
+{%- endif %}
+
+  </section>
+{%- endfor %}
+
+</main>
+
+<!-- Click an image to view it large -->
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lightbox__close" id="lightboxClose" type="button" aria-label="Close image">&times;</button>
+  <img class="lightbox__img" id="lightboxImg" src="" alt="" />
+</div>
