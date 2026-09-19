@@ -10,15 +10,21 @@ extra_js: /assets/js/gallery.js
 #   assets/images/gallery/<dir>/
 # at build time - drop a file in and it appears, no config needed.
 # Add a tab by adding an entry; `dir` must match the folder name.
+#
+# row_height (optional): how big the images are in that tab. It's a target
+# row height - larger means fewer, bigger images per row. Omit it to use
+# the 260px default set on .album in style.css.
 # ===========================================================================
 tabs:
   - id: paintings
     label: Paintings
     dir: paintings
+    row_height: 350px
     empty: "No paintings yet. Drop images into assets/images/gallery/paintings/ and they'll show up here."
   - id: photos
     label: Photos
     dir: photos
+    row_height: 260px
     empty: "No photos yet. Drop images into assets/images/gallery/photos/ and they'll show up here."
 ---
 
@@ -47,8 +53,21 @@ tabs:
   so a 01- / 02- prefix is how you control order.
 {%- endcomment -%}
 {%- assign prefix = '/assets/images/gallery/' | append: t.dir | append: '/' -%}
+{%- comment -%}
+  Any browser-renderable format works - this is not JPG-only. The
+  extension whitelist exists so a stray README, .txt or Thumbs.db in the
+  folder doesn't get emitted as a broken <img>. Upper-case variants are
+  listed explicitly because cameras commonly write .JPG and Liquid's
+  `contains` is case-sensitive.
+
+  Deliberately NOT listed: .heic / .heif. iPhones shoot HEIC by default
+  and only Safari renders it, so including it would show broken images
+  in Chrome and Firefox. Convert those to JPEG or WebP first.
+{%- endcomment -%}
+{%- assign allowed = ".jpg .jpeg .png .gif .webp .avif .svg .JPG .JPEG .PNG .GIF .WEBP .AVIF .SVG" | split: " " -%}
 {%- assign shots = site.static_files
       | where_exp: "f", "f.path contains prefix"
+      | where_exp: "f", "allowed contains f.extname"
       | sort: "name" -%}
 
   <section class="gallery-panel{% if forloop.first %} is-active{% endif %}"
@@ -64,7 +83,7 @@ tabs:
   correct width as its flex-basis, which is what lets rows justify
   without anyone declaring each image's dimensions.
 {%- endcomment -%}
-    <div class="album">
+    <div class="album"{% if t.row_height %} style="--album-row-h: {{ t.row_height }}"{% endif %}>
 {%- for img in shots %}
       <img class="album-img"
            src="{{ img.path | relative_url }}"

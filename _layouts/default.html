@@ -26,7 +26,7 @@
 <!-- ?v= is a cache buster. Chrome caches file:// and localhost assets hard,
      so edits can appear to "do nothing". Bump this number after any change
      to the CSS/JS if a refresh doesn't seem to pick it up. -->
-<link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}?v=18" />
+<link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}?v=20" />
 </head>
 <body>
 
@@ -62,8 +62,8 @@
 
 <!-- shader-header.js no-ops when the page has no #shader-header canvas;
      main.js guards each feature, so both are safe to load everywhere. -->
-<script src="{{ '/assets/js/shader-header.js' | relative_url }}?v=18"></script>
-<script src="{{ '/assets/js/main.js' | relative_url }}?v=18"></script>
-{% if page.extra_js %}<script src="{{ page.extra_js | relative_url }}?v=18"></script>{% endif %}
+<script src="{{ '/assets/js/shader-header.js' | relative_url }}?v=20"></script>
+<script src="{{ '/assets/js/main.js' | relative_url }}?v=20"></script>
+{% if page.extra_js %}<script src="{{ page.extra_js | relative_url }}?v=20"></script>{% endif %}
 </body>
 </html>

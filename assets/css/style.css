@@ -1120,6 +1120,21 @@ button {
    with no per-image configuration, the way Flickr or Google Photos pack
    a grid. */
 .album {
+  /* ===== IMAGE SIZE DIAL =====
+     Target row height. This is the one number to change.
+       larger  -> fewer, bigger images per row
+       smaller -> more, smaller images per row
+     It is a TARGET, not a fixed size: each image is scaled to this
+     height to work out its share of the row, then the row is stretched
+     to fill the width exactly. So actual heights land near this value,
+     not on it.
+     Override per tab with `row_height:` in gallery.html's front matter. */
+  --album-row-h: 260px;
+
+  /* How narrow a single image may be squeezed before the row rebalances.
+     Raise it if very tall/narrow images end up as slivers. */
+  --album-min-w: 180px;
+
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -1127,9 +1142,13 @@ button {
 }
 
 .album-img {
-  height: 260px;
+  /* min() keeps the gallery sane on small screens even when a tab sets
+     its own --album-row-h inline, which would otherwise beat a media
+     query on specificity. 45vw is roughly "no taller than half the
+     screen width". */
+  height: min(var(--album-row-h), 45vw);
   flex: 1 1 auto;
-  min-width: 120px;
+  min-width: var(--album-min-w);
   max-width: 100%;
   object-fit: cover;
   display: block;
@@ -1224,9 +1243,9 @@ a.nav-link {
     padding: 28px 16px 64px;
   }
 
-  .album-img {
-    height: 180px;
-  }
+  /* No .album-img height override needed here - the min(..., 45vw) above
+     handles small screens, and unlike a media query it still applies when
+     a tab sets --album-row-h inline. */
 
   .gallery-tab {
     padding: 10px 12px;
