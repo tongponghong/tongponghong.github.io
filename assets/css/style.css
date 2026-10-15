@@ -830,6 +830,28 @@ button {
   margin: 18px 0;
 }
 
+/* Side-by-side figures: wrap any number of <figure>s in
+   <div class="figure-row"> in a project's markdown. Columns share the
+   width equally; stacks to one column on narrow screens. */
+.side-panel__body .figure-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 18px 0;
+}
+
+.side-panel__body .figure-row figure {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .side-panel__body .figure-row {
+    flex-direction: column;
+  }
+}
+
 .side-panel__body figcaption {
   font-size: 0.85rem;
   /* colour, not opacity — a figcaption sits inside <figure> alongside the

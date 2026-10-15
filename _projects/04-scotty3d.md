@@ -1,31 +1,37 @@
 ---
 title: "Scotty3D"
-caption: "[Add a one-line caption for the carousel]"
+caption: "A 3D modeling, rendering, and animation package"
 # Demo reel for the panel header. Accepts a full YouTube URL, a youtu.be
 # link, an /embed/ URL, or a bare video ID. Takes priority over `image`.
-video: ""
+video: "https://youtu.be/mHFpiDbjxbE"
 github: ""
-image: "/assets/Scotty3D/images/Glass_beachy_drag_512.png"
+image: "/assets/images/Scotty3D/Glass_beachy_drag_512.png"
 accent: "b"
 ---
 
 ## Scotty3D
 
-### Rasterization
-<figure>
-    <img src="assets/images/Scotty3D/A1T6-tilted.png" alt="Glass Dragon">
-    <figcaption>Rendered at resolution model source:</figcaption>
-</figure>
-<figure>
-    <img src="assets/images/Scotty3D/A1T7_flower_render.png" alt="Glass Dragon">
-    <figcaption>Rendered at resolution model source:</figcaption>
-</figure>
+In the fall of 2025, I was introduced to computer graphics by taking 15-362 Computer Graphics at CMU. In this class, we added in the implementation for a rasterizer, mesh editor, path tracer, and animation handler. 
 
-### Geometry operations
+Here are some of my favorite outputs below:
+
+### Rasterization
+<div class="figure-row">
+<figure>
+    <img src="/assets/images/Scotty3D/A1T6-tilted.png" alt="Glass Dragon">
+    <!-- <figcaption>Rendered at resolution model source:</figcaption> -->
+</figure>
+<figure>
+    <img src="/assets/images/Scotty3D/A1T7_flower_render.png" alt="Glass Dragon">
+    <!-- <figcaption>Rendered at resolution model source:</figcaption> -->
+</figure>
+</div>
+
+Basic rasterized scenes demonstrating nearest neighbor, bilinear, and trilinear filtering left to right in the left image, and a simple rasterized flower on the right. 
 
 ### Pathtracing
 <figure>
-    <img src="assets/images/Scotty3D/T5.A3-cbox-spheres.png" alt="Glass Dragon">
+    <img src="/assets/images/Scotty3D/T5.A3-cbox-spheres.png" alt="Glass Dragon">
     <figcaption>Rendered at resolution model source:</figcaption>
 </figure>
 
@@ -36,10 +42,16 @@ accent: "b"
 
 ### Animation
 
-<video width="320" height="240" controls>
-  <source src="assets/images/Scotty3D/outputSubmission_1280x720.mp4" type="video/mp4">
-</video>
+<div style="position: relative; width: 100%; padding-bottom: 56.25%">
+<iframe src="https://www.youtube.com/embed/vTKbKmQN9Z0" 
+        title="Glass Spheres Demo" frameborder="0" allowfullscreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        style="position: absolute; width: 100%; height: 100%;">
+</iframe>
+</div>
 
+Might need to turn the resolution up to 720p for this video. 
+Basic animation to apply A4 material with particles acting as glass spheres. 
 
 <!-- ---------------------------------------------------------------------
      Your notes-to-self from the original file, preserved verbatim but

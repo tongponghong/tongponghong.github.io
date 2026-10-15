@@ -1,6 +1,6 @@
 ---
 title: "Real-Time Watercolor Stylization"
-caption: "[Add a one-line caption for the carousel]"
+caption: "Real-Time Watercolor Stylization based on Montesdeoca et. al's work"
 # Demo reel for the panel header. Accepts a full YouTube URL, a youtu.be
 # link, an /embed/ URL, or a bare video ID. Takes priority over `image`.
 video: ""
