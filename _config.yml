@@ -33,3 +33,4 @@ exclude:
   - README.md
   - .ruby-lsp
   - vendor
+  - scripts

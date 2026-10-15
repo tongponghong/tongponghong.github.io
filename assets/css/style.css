@@ -1177,6 +1177,14 @@ button {
   outline: none;
 }
 
+/* gallery.js sizes every image to its exact aspect ratio, so switch off
+   the flex stretching and min-width the CSS-only fallback relies on. */
+.album.is-justified .album-img {
+  flex: none;
+  min-width: 0;
+  max-width: none;
+}
+
 /* Soaks up the slack on the final row so a lone trailing image isn't
    stretched across the full width. */
 .album::after {

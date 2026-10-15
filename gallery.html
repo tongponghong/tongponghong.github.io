@@ -83,10 +83,18 @@ tabs:
   correct width as its flex-basis, which is what lets rows justify
   without anyone declaring each image's dimensions.
 {%- endcomment -%}
+{%- comment -%}
+  Grid shows a small WebP from assets/images/gallery-thumbs/ (made by
+  scripts/make_gallery_thumbs.py); the lightbox opens the original via
+  data-full. No thumbnail yet -> falls back to the original.
+{%- endcomment -%}
+{%- assign thumb_prefix = '/assets/images/gallery-thumbs/' | append: t.dir | append: '/' -%}
     <div class="album"{% if t.row_height %} style="--album-row-h: {{ t.row_height }}"{% endif %}>
 {%- for img in shots %}
+{%- assign thumb_path = thumb_prefix | append: img.basename | append: '.webp' -%}
+{%- assign thumb = site.static_files | where: "path", thumb_path | first -%}
       <img class="album-img"
-           src="{{ img.path | relative_url }}"
+           src="{% if thumb %}{{ thumb_path | relative_url }}{% else %}{{ img.path | relative_url }}{% endif %}"
            data-full="{{ img.path | relative_url }}"
            alt="{{ img.basename | replace: '-', ' ' | replace: '_', ' ' | escape }}"
            role="button"

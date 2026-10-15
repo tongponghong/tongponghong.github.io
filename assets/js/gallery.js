@@ -41,6 +41,91 @@ document.addEventListener("DOMContentLoaded", () => {
   const fromHash = location.hash.replace("#", "");
   if (fromHash && tabs.some((t) => t.dataset.tab === fromHash)) showTab(fromHash);
 
+  /* ---------------- Justified layout ----------------
+     The CSS-only rows give every image the same height and then stretch
+     the row to fill, which crops whichever images got stretched most.
+     Here each row instead gets its OWN height, chosen so the images'
+     true aspect ratios sum exactly to the album width - so nothing is
+     cropped or distorted. CSS stays as the no-JS fallback.
+
+     Ratios come from naturalWidth/Height, which aren't known until an
+     image loads (and images are lazy), so unloaded ones assume 3:2 and
+     the album re-lays itself out as each one arrives. */
+  const DEFAULT_RATIO = 1.5;
+
+  function targetHeight(album) {
+    const raw = parseFloat(getComputedStyle(album).getPropertyValue("--album-row-h")) || 260;
+    // Mirrors the CSS min(row-h, 45vw) so phones get smaller rows
+    return Math.min(raw, window.innerWidth * 0.45);
+  }
+
+  function ratioOf(img) {
+    return img.naturalWidth && img.naturalHeight
+      ? img.naturalWidth / img.naturalHeight
+      : DEFAULT_RATIO;
+  }
+
+  function layoutAlbum(album) {
+    // A hidden tab has no width; the ResizeObserver re-runs this when shown
+    const width = album.clientWidth - 1; // 1px slack absorbs sub-pixel rounding
+    if (width <= 0) return;
+    const imgs = Array.from(album.querySelectorAll(".album-img"));
+    if (!imgs.length) return;
+
+    const gap = parseFloat(getComputedStyle(album).columnGap) || 10;
+    const target = targetHeight(album);
+    const size = (img, h) => {
+      img.style.height = h + "px";
+      img.style.width = ratioOf(img) * h + "px";
+    };
+    // Height at which `row` exactly fills the width
+    const fitHeight = (row) =>
+      (width - gap * (row.length - 1)) / row.reduce((s, img) => s + ratioOf(img), 0);
+
+    let row = [];
+    for (const img of imgs) {
+      row.push(img);
+      const h = fitHeight(row);
+      if (h > target) continue; // row still too short - keep adding
+
+      // Row is now full. Keep the last image only if that lands closer
+      // to the target height than ending the row without it.
+      if (row.length > 1) {
+        const without = row.slice(0, -1);
+        const hWithout = fitHeight(without);
+        if (Math.abs(hWithout - target) < Math.abs(h - target)) {
+          without.forEach((i) => size(i, hWithout));
+          row = [img];
+          continue;
+        }
+      }
+      row.forEach((i) => size(i, h));
+      row = [];
+    }
+    // Last, unfilled row: natural target height, left-aligned, no stretch
+    row.forEach((i) => size(i, target));
+
+    album.classList.add("is-justified");
+  }
+
+  document.querySelectorAll(".album").forEach((album) => {
+    let queued = false;
+    const relayout = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        layoutAlbum(album);
+      });
+    };
+    album.querySelectorAll(".album-img").forEach((img) => {
+      if (!img.complete) img.addEventListener("load", relayout);
+    });
+    // Covers window resizes AND a tab going from hidden to shown
+    new ResizeObserver(relayout).observe(album);
+    relayout();
+  });
+
   /* ---------------- Lightbox ---------------- */
   const lightbox = document.getElementById("lightbox");
   const lightboxImg = document.getElementById("lightboxImg");
