@@ -7,7 +7,6 @@ video: ""
 github: "https://github.com/tongponghong/15472_watercolor"
 image: "/assets/images/pipeline.png"
 accent: "c"
-order: 3
 ---
 
 <!-- This file was empty in the old repo. The watercolor write-up currently

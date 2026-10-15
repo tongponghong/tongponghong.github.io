@@ -7,7 +7,6 @@ video: ""
 github: "https://github.com/tongponghong/15472_watercolor"
 image: ""
 accent: "a"
-order: 4
 ---
 
 ### 3D Drawing App

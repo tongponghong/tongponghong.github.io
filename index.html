@@ -1,9 +1,10 @@
 ---
 layout: default
 nav: home
-# Projects are sorted by the `order` field in each _projects/*.md file.
+# Projects are sorted by filename, so the 01- / 02- prefix on each
+# _projects/*.md file controls their order (carousel and resume).
 ---
-{% assign projects = site.projects | sort: "order" %}
+{% assign projects = site.projects | sort: "path" %}
 
 <main id="top">
 
@@ -20,9 +21,11 @@ nav: home
       <div class="carousel-track" id="carouselTrack">
 {% for p in projects %}
 {%- comment -%}
-  Card artwork, in priority order:
-    1. an explicit `image:` in the front matter
-    2. the YouTube thumbnail, derived from `video:`
+  Card artwork, in priority order — deliberately the SAME order the project
+  panel uses (main.js openProjectPanel), so the card and the panel header
+  always show the same project media:
+    1. the YouTube thumbnail, derived from `video:`
+    2. an explicit `image:` in the front matter
     3. the gradient placeholder
   The ID is pulled out here (server-side) so the card is a plain static
   background — no JS needed for the common case.
@@ -31,21 +34,19 @@ nav: home
 {%- assign yt = yt | strip -%}
 {%- assign card_bg = '' -%}
 {%- assign card_from_yt = false -%}
-{%- if p.image and p.image != '' -%}
-  {%- assign card_bg = p.image | relative_url -%}
-{%- elsif yt != '' -%}
+{%- if yt != '' -%}
   {%- assign card_bg = 'https://img.youtube.com/vi/' | append: yt | append: '/maxresdefault.jpg' -%}
   {%- assign card_from_yt = true -%}
+{%- elsif p.image and p.image != '' -%}
+  {%- assign card_bg = p.image | relative_url -%}
 {%- endif -%}
-        <article class="carousel-slide" data-project="{{ p.slug }}" data-caption="{{ p.caption | escape }}">
+        <article class="carousel-slide" data-project="{{ p.slug }}" data-caption="{{ p.caption | escape }}"
+                 tabindex="0" role="button" aria-label="Open project: {{ p.title | escape }}">
           <div class="carousel-slide__media{% if card_bg == '' %} placeholder-media placeholder-media--{{ p.accent | default: 'a' }}{% endif %}"
                {% if card_bg != '' %}style="background-image:url('{{ card_bg }}');background-size:cover;background-position:center;"{% endif %}
                {% if card_from_yt %}data-yt="{{ yt }}"{% endif %}></div>
           <div class="carousel-slide__scrim"></div>
           <h2 class="carousel-slide__title">{{ p.title }}</h2>
-          <button class="play-btn" type="button" aria-label="Open {{ p.title | escape }}" data-project="{{ p.slug }}">
-            <span>Play</span>
-          </button>
         </article>
 {% endfor %}
       </div>

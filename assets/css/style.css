@@ -179,7 +179,7 @@ button {
      teleport uses scrollTo({behavior:"auto"}) and a CSS smooth value would
      override it, animating the jump and making the seam visible. Smooth
      scrolling is opted into per-call from main.js instead. */
-  padding: 8px 12% 24px;
+  padding: 18px 12% 30px;
   -ms-overflow-style: none;
   scrollbar-width: none;
 
@@ -256,7 +256,7 @@ button {
    visible "pop" every time the carousel wraps. Higher specificity (0,3,0)
    than .carousel-slide (0,1,0), so no !important needed. */
 .carousel-track.is-teleporting .carousel-slide,
-.carousel-track.is-teleporting .play-btn {
+.carousel-track.is-teleporting .carousel-slide__media {
   transition: none !important;
 }
 
@@ -293,7 +293,7 @@ button {
   position: absolute;
   left: 28px;
   bottom: 24px;
-  right: 96px;
+  right: 28px;
   color: #F9F5EB;
   font-size: clamp(1.25rem, 2.4vw, 2rem);
   font-weight: 700;
@@ -301,59 +301,49 @@ button {
   z-index: 2;
 }
 
-.play-btn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  border: none;
-  background: #F9F5EB;
-  color: var(--color-text);
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 24px rgba(19, 14, 1, 0.25);
-  z-index: 2;
+/* ---- Hover / focus: the card itself is the button ----
+   No Play button: clicking opens the project panel, not a video, so a
+   play glyph was misleading. Instead the whole card lifts on hover to
+   signal it's clickable. The media zooms slightly inside the rounded
+   frame for depth, without changing the card's layout box.
+   Gated on (hover: hover) so touch devices don't get a sticky hover. */
+@media (hover: hover) {
+  .carousel-slide.is-active:hover {
+    transform: scale(1.035);
+    box-shadow: 0 22px 54px rgba(19, 14, 1, 0.34);
+  }
 
-  /* Only the centred slide shows a Play button. The peeking slides are
-     half off-screen, so their centred button lands right on top of the
-     prev/next arrows — which read as two overlapping buttons. */
-  opacity: 0;
-  pointer-events: none;
-
-  /* Fade OUT fast and with no delay. A CSS transition is chosen from the
-     AFTER-change style, so a slide losing .is-active picks up this rule and
-     is fully gone in 120ms. */
-  transition: opacity 0.12s ease, transform 0.2s ease;
+  /* Peeking side cards are clickable too - brighten them a touch */
+  .carousel-slide:not(.is-active):hover {
+    opacity: 0.75;
+    transform: scale(0.94);
+  }
 }
 
-
-.carousel-slide.is-active .play-btn {
-  opacity: 1;
-  pointer-events: auto;
-
-  /* Fade IN only after the outgoing button has finished disappearing
-     (0.12s delay == the fade-out duration above). Without this sequencing
-     the two crossfade, putting two semi-transparent Play buttons on screen
-     at once — one of which lands underneath the prev/next arrow. */
-  transition: opacity 0.22s ease 0.12s, transform 0.2s ease;
+.carousel-slide__media {
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.carousel-slide.is-active .play-btn:hover {
-  transform: translate(-50%, -50%) scale(1.06);
+@media (hover: hover) {
+  .carousel-slide.is-active:hover .carousel-slide__media {
+    transform: scale(1.06);
+  }
 }
 
-/* Force the play button to hide while the track is actively scrolling */
-.carousel-track.is-scrolling .play-btn {
-  opacity: 0 !important;
-  pointer-events: none;
-  transition: opacity 0.12s ease;
+/* Keyboard users get the same lift, plus a visible focus ring */
+.carousel-slide.is-active:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 4px;
+  transform: scale(1.035);
+}
+
+.carousel-slide:focus {
+  outline: none;
+}
+
+.carousel-slide:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 4px;
 }
 
 .carousel-arrow {
@@ -995,7 +985,7 @@ button {
   }
 
   .carousel-track {
-    padding: 8px 8% 24px;
+    padding: 18px 8% 30px;
   }
 
   .carousel-slide {

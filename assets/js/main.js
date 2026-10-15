@@ -79,6 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const c = s.cloneNode(true);
           c.dataset.clone = "1";
           c.setAttribute("aria-hidden", "true");
+          // Cards are focusable now; keep the duplicate copies out of the
+          // tab order so keyboard users don't tab through every project 3x.
+          c.tabIndex = -1;
           return c;
         });
 
@@ -316,11 +319,19 @@ document.addEventListener("DOMContentLoaded", () => {
     prevBtn.addEventListener("click", () => step(-1));
     nextBtn.addEventListener("click", () => step(1));
 
-    // Clicking a slide (or its play button) opens that project's panel.
+    // Clicking a card opens that project's panel. The card itself is the
+    // button (role="button", tabindex="0"), so Enter/Space must work too —
+    // a native <button> gets that for free, an <article> doesn't.
     // Bound to clones too, so they behave identically.
     slides.forEach((slide) => {
       slide.addEventListener("click", () => {
         openProjectPanel(slide.dataset.project);
+      });
+      slide.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault(); // stop Space from scrolling the page
+          openProjectPanel(slide.dataset.project);
+        }
       });
     });
 

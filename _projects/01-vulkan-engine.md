@@ -1,13 +1,12 @@
 ---
 title: "Vulkan Render Engine"
-caption: "[Add a one-line caption for the carousel]"
+caption: "General Purpose Rendering Engine built in Vulkan"
 # Demo reel for the panel header. Accepts a full YouTube URL, a youtu.be
 # link, an /embed/ URL, or a bare video ID. Takes priority over `image`.
 video: "https://www.youtube.com/embed/fpfjndMU4Q0"
 github: "https://gitshare.me/repo/93dd892d-e82e-485a-a0cb-bd1ebb93e055"
 image: "/assets/images/pipeline.png"
 accent: "a"
-order: 1
 
 # Video gallery, rendered as a click-to-play grid below the body text.
 # Same URL forms as `video:` above. `title` is optional.
