@@ -3,9 +3,9 @@ title: "Real-Time Watercolor Stylization"
 caption: "Real-Time Watercolor Stylization based on Montesdeoca et. al's work"
 # Demo reel for the panel header. Accepts a full YouTube URL, a youtu.be
 # link, an /embed/ URL, or a bare video ID. Takes priority over `image`.
-video: ""
+video: "https://youtu.be/jbuTZxfVefM"
 github: "https://github.com/tongponghong/15472_watercolor"
-image: "/assets/images/pipeline.png"
+image: ""
 accent: "c"
 ---
 
