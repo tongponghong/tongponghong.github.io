@@ -58,7 +58,10 @@ contact:
   items:
     # `icon` must be one of: email, github, linkedin
     - icon: "email"
-      label: "tungerpg@gmail.com"
+      label: "School: tungerh@andrew.cmu.edu"
+      url: "mailto:tungerh@andrew.cmu.edu"
+    - icon: "email"
+      label: "Personal: tungerpg@gmail.com"
       url: "mailto:tungerpg@gmail.com"
     - icon: "github"
       label: "tongponghong"
