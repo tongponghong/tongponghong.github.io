@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
        Any manual interaction restarts the countdown so it never
        yanks the slide out from under someone mid-swipe.
        ======================================================= */
-    const AUTOSCROLL_MS = 5000;
+    const AUTOSCROLL_MS = 3000;
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
